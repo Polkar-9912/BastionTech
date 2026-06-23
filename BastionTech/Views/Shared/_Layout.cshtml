@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BastionTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a asp-controller="Tienda" asp-action="Index" class="text-2xl font-black text-blue-800 tracking-tight">
+                        Bastion<span class="text-slate-800">Tech</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <a asp-controller="Tienda" asp-action="Carrito" class="relative p-2 text-slate-600 hover:text-blue-800 transition-colors">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span id="contador-carrito" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-rose-500 rounded-full">0</span>
+                    </a>
+                    <a asp-controller="Account" asp-action="Login" class="hidden sm:inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-800 hover:bg-blue-700 shadow-sm transition-colors">
+                        Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
+        @RenderBody()
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-slate-500 text-sm">
+            &copy; @DateTime.Now.Year - BastionTech | Protegiendo y equipando tu infraestructura.
+        </div>
+    </footer>
+
+    <script src="~/js/carrito.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

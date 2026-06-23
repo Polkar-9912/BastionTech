@@ -1,0 +1,27 @@
+﻿@{
+    ViewData["Title"] = "Mi Carrito";
+}
+
+<div class="max-w-4xl mx-auto my-8">
+    <h1 class="text-3xl font-black text-slate-900 mb-8">Mi Carrito de Compras</h1>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div id="contenedor-carrito-items"></div>
+
+        <div id="contenedor-totales" class="bg-slate-50 p-6 border-t border-slate-100 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-lg font-semibold text-slate-600">Total a pagar:</span>
+                <span id="total-carrito" class="text-3xl font-black text-blue-800">$0</span>
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <button onclick="vaciarCarrito()" class="px-6 py-3 font-semibold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">
+                    Vaciar carrito
+                </button>
+                <button onclick="procesarCheckout()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-sm transition-colors text-lg">
+                    Finalizar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

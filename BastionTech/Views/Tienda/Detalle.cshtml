@@ -1,0 +1,52 @@
+﻿@model BastionTech.Models.Producto
+
+@{
+    ViewData["Title"] = Model.Nombre;
+}
+
+<div class="max-w-5xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-100 my-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        <div class="flex justify-center items-center bg-slate-50 rounded-xl p-8 min-h-[300px]">
+            @if (!string.IsNullOrEmpty(Model.UrlImagen))
+            {
+                <img src="@Model.UrlImagen" alt="@Model.Nombre" class="max-h-96 object-contain mix-blend-multiply" />
+            }
+        </div>
+
+        <div class="flex flex-col justify-center">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">@Model.Categoria</span>
+            <h1 class="text-3xl font-black text-slate-900 mb-4">@Model.Nombre</h1>
+
+            <div class="text-4xl font-black text-blue-800 mb-6">
+                $@Model.Precio.ToString("N0")
+            </div>
+
+            <p class="text-slate-600 text-base leading-relaxed mb-6">@Model.EspecificacionesTecnicas</p>
+
+            <div class="mb-8">
+                @if (Model.Stock > 0 || Model.EsServicio)
+                {
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-md">
+                        @(Model.EsServicio ? "Servicio Activo" : $"Stock Disponible: {Model.Stock} unid.")
+                    </span>
+                }
+                else
+                {
+                    <span class="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold px-3 py-1.5 rounded-md">Sin Stock</span>
+                }
+            </div>
+
+            <div class="flex gap-4">
+                <input type="number" id="cantidad-item" value="1" min="1" max="@(Model.EsServicio ? 1 : Model.Stock)"
+                       class="w-24 border border-slate-300 rounded-lg p-3 text-center font-bold text-lg focus:outline-none focus:border-blue-800" />
+
+                <button onclick="agregarAlCarrito(@Model.Id, '@Model.Nombre', @Model.Precio.ToString().Replace(",", "."), @(Model.EsServicio.ToString().ToLower()))"
+                    @(Model.Stock == 0 && !Model.EsServicio ? "disabled" : "")
+                        class="flex-1 bg-blue-800 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-3 px-6 rounded-lg shadow-sm transition-colors text-lg">
+                    Añadir al Carrito
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
