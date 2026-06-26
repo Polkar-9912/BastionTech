@@ -6,7 +6,7 @@ namespace BastionTech.Models
     [Table("tickets_servicio")]
     public class TicketServicio : BaseModel
     {
-        [PrimaryKey("id", true)]
+        [PrimaryKey("id", false)]
         public int Id { get; set; }
 
         [Column("ventadetalleid")]

@@ -6,7 +6,7 @@ namespace BastionTech.Models
     [Table("ventas")]
     public class Venta : BaseModel
     {
-        [PrimaryKey("id", true)]
+        [PrimaryKey("id", false)]
         public int Id { get; set; }
 
         [Column("usuarioid")]

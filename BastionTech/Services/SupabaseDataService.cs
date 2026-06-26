@@ -66,5 +66,11 @@ namespace BastionTech.Services
             var client = await GetClientAsync();
             await client.From<Models.TicketServicio>().Insert(ticket);
         }
+        public async Task ActualizarProductoAsync(Models.Producto producto)
+        {
+            var client = await GetClientAsync();
+            // Supabase actualizará el registro completo basado en el ID del modelo
+            await client.From<Models.Producto>().Update(producto);
+        }
     }
 }
