@@ -1,0 +1,185 @@
+﻿@{
+    ViewData["Title"] = "Acceso";
+}
+
+<div class="max-w-md mx-auto my-16 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+
+    <div class="text-center mb-8">
+        <h1 id="titulo-form" class="text-3xl font-black text-slate-900 mb-2">Bienvenido de vuelta</h1>
+        <p id="subtitulo-form" class="text-slate-500">Ingresa tus credenciales para acceder a tu cuenta.</p>
+    </div>
+
+    <div class="space-y-5">
+        <div id="campo-nombre" class="hidden">
+            <label class="block text-sm font-bold text-slate-700 mb-1">Nombre Completo</label>
+            <input type="text" id="nombre" placeholder="Ej. Juan Pérez"
+                   class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition-colors" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Correo Electrónico</label>
+            <input type="email" id="email" placeholder="tu@correo.com"
+                   class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition-colors" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">Contraseña</label>
+            <input type="password" id="password" placeholder="••••••••"
+                   class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:border-blue-800 focus:ring-1 focus:ring-blue-800 transition-colors" />
+        </div>
+
+        <div id="mensaje-error" class="hidden bg-rose-50 text-rose-600 p-3 rounded-lg text-sm border border-rose-200">
+        </div>
+
+        <button id="btn-accion" onclick="procesarAuth()"
+                class="w-full bg-blue-800 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition-colors mt-4">
+            Iniciar Sesión
+        </button>
+    </div>
+
+    <div class="mt-8 text-center text-sm text-slate-600 border-t border-slate-100 pt-6">
+        <span id="texto-toggle">¿No tienes una cuenta?</span>
+        <button onclick="toggleModo()" class="font-bold text-blue-800 hover:text-blue-600 ml-1 transition-colors">
+            <span id="btn-toggle">Regístrate aquí</span>
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modoRegistro = false;
+
+        // 1. Alternar la interfaz entre Login y Registro
+        function toggleModo() {
+            modoRegistro = !modoRegistro;
+
+            const campoNombre = document.getElementById('campo-nombre');
+            const titulo = document.getElementById('titulo-form');
+            const subtitulo = document.getElementById('subtitulo-form');
+            const btnAccion = document.getElementById('btn-accion');
+            const textoToggle = document.getElementById('texto-toggle');
+            const btnToggle = document.getElementById('btn-toggle');
+            const divError = document.getElementById('mensaje-error');
+
+            divError.classList.add('hidden'); // Limpiamos errores al cambiar
+
+            if (modoRegistro) {
+                campoNombre.classList.remove('hidden');
+                titulo.innerText = 'Crea tu cuenta';
+                subtitulo.innerText = 'Regístrate para gestionar tus compras y tickets.';
+                btnAccion.innerText = 'Registrarse';
+                textoToggle.innerText = '¿Ya tienes una cuenta?';
+                btnToggle.innerText = 'Inicia sesión';
+            } else {
+                campoNombre.classList.add('hidden');
+                titulo.innerText = 'Bienvenido de vuelta';
+                subtitulo.innerText = 'Ingresa tus credenciales para acceder a tu cuenta.';
+                btnAccion.innerText = 'Iniciar Sesión';
+                textoToggle.innerText = '¿No tienes una cuenta?';
+                btnToggle.innerText = 'Regístrate aquí';
+            }
+        }
+
+        // 2. Comunicarse con el servicio de Identidad (usando supabaseClient)
+        async function procesarAuth() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const divError = document.getElementById('mensaje-error');
+            const btnAccion = document.getElementById('btn-accion');
+
+            if (!email || !password) {
+                mostrarError("Por favor completa todos los campos.");
+                return;
+            }
+
+            btnAccion.disabled = true;
+            btnAccion.innerText = 'Procesando...';
+            btnAccion.classList.add('opacity-75');
+            divError.classList.add('hidden');
+
+            try {
+                if (modoRegistro) {
+                    const nombre = document.getElementById('nombre').value.trim();
+                    if (!nombre) {
+                        mostrarError("El nombre es obligatorio para el registro.");
+                        throw new Error("Validation failed");
+                    }
+
+                    // USAMOS supabaseClient EN LUGAR DE supabase
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: { data: { full_name: nombre } }
+                    });
+
+                    if (error) throw error;
+
+                    if (data.user) {
+                        await fetch('/Account/SincronizarPerfil', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                Id: data.user.id,
+                                NombreCompleto: nombre,
+                                Email: email
+                            })
+                        });
+                    }
+
+                    alert("¡Registro exitoso! Ya puedes iniciar sesión.");
+                    toggleModo();
+
+                } else {
+                    // LOGIN CON supabaseClient
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (error) throw error;
+
+                    // AVISAMOS A C# PARA QUE CREE LA COOKIE
+                    if (data.user) {
+                        await fetch('/Account/CrearSesionCookie', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                Id: data.user.id,
+                                Email: email,
+                                NombreCompleto: "" // No lo necesitamos aquí, C# lo saca de BD
+                            })
+                        });
+                    }
+
+                    alert("¡Sesión iniciada!");
+                    window.location.href = '/Tienda/Index';
+                }
+
+            } catch (err) {
+                if (err.message !== "Validation failed") {
+                    mostrarError(err.message);
+                }
+            } finally {
+                // Siempre reactivamos el botón al terminar, pase lo que pase
+                btnAccion.disabled = false;
+                btnAccion.innerText = modoRegistro ? 'Registrarse' : 'Iniciar Sesión';
+                btnAccion.classList.remove('opacity-75');
+            }
+        }
+
+        // 3. Función auxiliar para mostrar errores de forma amigable
+        function mostrarError(mensaje) {
+            const divError = document.getElementById('mensaje-error');
+            if (mensaje.includes("Invalid login credentials")) {
+                mensaje = "Correo o contraseña incorrectos.";
+            } else if (mensaje.includes("User already registered")) {
+                mensaje = "Ya existe una cuenta con este correo.";
+            } else if (mensaje.includes("Password should be at least")) {
+                mensaje = "La contraseña debe tener al menos 6 caracteres.";
+            }
+
+            divError.innerText = mensaje;
+            divError.classList.remove('hidden');
+        }
+    </script>
+}

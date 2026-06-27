@@ -47,11 +47,19 @@ namespace BastionTech.Controllers
         // ==========================================
         public IActionResult Carrito()
         {
-            // Esta vista cargará vacía desde C#. 
-            // Usaremos Javascript en el navegador para leer el LocalStorage 
-            // y pintar los productos que el cliente haya ido agregando.
+            // Bloquear acceso a staff interno
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Administrador") || User.IsInRole("Tecnico"))
+                {
+                    // Si es staff, lo mandamos de vuelta al catálogo
+                    return RedirectToAction("Index");
+                }
+            }
+
             return View();
         }
+        
 
         // ==========================================
         // 💳 4. PROCESAR LA COMPRA (ENDPOINT API)
@@ -148,6 +156,15 @@ namespace BastionTech.Controllers
                 return StatusCode(500, new { mensaje = ex.Message });
             }
         }
+
+
+        // DTO para estructurar los datos que recibiremos desde JavaScript
+        public class CarritoGuardadoDTO
+        {
+            public int ProductoId { get; set; }
+            public int Cantidad { get; set; }
+            public bool EsServicio { get; set; }
+        }
     }
 
     // ==========================================
@@ -168,4 +185,5 @@ namespace BastionTech.Controllers
         public decimal PrecioUnitario { get; set; }
         public bool EsServicio { get; set; }
     }
+
 }
