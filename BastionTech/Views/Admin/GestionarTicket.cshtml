@@ -1,0 +1,47 @@
+﻿@model BastionTech.Models.TicketServicio
+@{
+    ViewData["Title"] = "Diagnóstico de Ticket";
+}
+
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center mb-6">
+        <a asp-action="Tickets" class="text-slate-400 hover:text-blue-800 transition-colors mr-4">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h1 class="text-3xl font-black text-slate-800">Orden de Trabajo #@Model.Id</h1>
+            <p class="text-sm text-slate-500 mt-1">Abierto el: @Model.FechaCreacion.ToString("dd MMMM, yyyy - HH:mm")</p>
+        </div>
+    </div>
+
+    <form asp-action="GestionarTicket" method="post" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="VentaDetalleId" />
+        <input type="hidden" asp-for="ClienteId" />
+        <input type="hidden" asp-for="FechaCreacion" />
+
+        <div class="space-y-6">
+
+            <div>
+                <label asp-for="EstadoTicket" class="block text-sm font-bold text-slate-700 mb-2">Estado Operativo</label>
+                <select asp-for="EstadoTicket" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50 font-medium text-slate-800">
+                    <option value="Pendiente">🔴 Pendiente (En espera de asignación)</option>
+                    <option value="En Proceso">🔵 En Proceso (Técnico trabajando)</option>
+                    <option value="Resuelto">🟢 Resuelto (Servicio finalizado con éxito)</option>
+                </select>
+            </div>
+
+            <div>
+                <label asp-for="NotasTecnicas" class="block text-sm font-bold text-slate-700 mb-2">Bitácora y Notas Técnicas</label>
+                <textarea asp-for="NotasTecnicas" rows="6" placeholder="Escribe aquí las observaciones del hardware, reportes de reparación o justificaciones técnicas..." class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"></textarea>
+            </div>
+
+        </div>
+
+        <div class="mt-8 flex justify-end space-x-4">
+            <a asp-action="Tickets" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</a>
+            <button type="submit" class="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg font-bold shadow-sm transition-colors">Guardar Reporte</button>
+        </div>
+    </form>
+</div>

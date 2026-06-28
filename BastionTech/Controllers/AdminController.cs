@@ -20,17 +20,15 @@ namespace BastionTech.Controllers
         // ==========================================
         public async Task<IActionResult> Dashboard()
         {
-            // 1. Obtenemos toda la data financiera
             var ventas = await _supabaseService.GetVentasTotalesAsync();
+            var tickets = await _supabaseService.GetTicketsAsync(); // <-- Agregamos esto
 
-            // 2. Calculamos las métricas y las mandamos por ViewBag
             ViewBag.TotalIngresos = ventas.Sum(v => v.Total);
             ViewBag.TotalVentas = ventas.Count;
-            ViewBag.TicketsAbiertos = 0; // Lo conectaremos en la Fase 4
+            // Contamos solo los que requieren atención
+            ViewBag.TicketsAbiertos = tickets.Count(t => t.EstadoTicket == "Pendiente" || t.EstadoTicket == "En Proceso");
 
-            // 3. Mandamos solo las 10 transacciones más recientes a la tabla
             var ultimasVentas = ventas.Take(10).ToList();
-
             return View(ultimasVentas);
         }
 
@@ -127,6 +125,32 @@ namespace BastionTech.Controllers
         public IActionResult Reportes()
         {
             return View();
+        }
+        // ==========================================
+        // 🛠️ 5. CONSOLA DE SOPORTE TÉCNICO
+        // ==========================================
+        // Nota: NO ponemos [Authorize(Roles="Admin")] aquí. Heredará el acceso para Administradores y Técnicos.
+
+        public async Task<IActionResult> Tickets()
+        {
+            var tickets = await _supabaseService.GetTicketsAsync();
+            return View(tickets);
+        }
+
+        public async Task<IActionResult> GestionarTicket(int id)
+        {
+            var ticket = await _supabaseService.GetTicketByIdAsync(id);
+            if (ticket == null) return NotFound("Ticket no encontrado.");
+            return View(ticket);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GestionarTicket(Models.TicketServicio modelo)
+        {
+            // Actualizamos la información en Supabase
+            await _supabaseService.ActualizarTicketAsync(modelo);
+            TempData["MensajeExito"] = "El estado del ticket y las notas técnicas se han actualizado correctamente.";
+            return RedirectToAction("Tickets");
         }
     }
 }

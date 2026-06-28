@@ -163,5 +163,30 @@ namespace BastionTech.Services
             var client = await GetClientAsync();
             await client.From<Models.Venta>().Update(venta);
         }
+        // ==========================================
+        // 🛠️ GESTIÓN DE SOPORTE TÉCNICO (TICKETS)
+        // ==========================================
+        public async Task<List<Models.TicketServicio>> GetTicketsAsync()
+        {
+            var client = await GetClientAsync();
+            var response = await client.From<Models.TicketServicio>()
+                                       .Select("*")
+                                       .Order("fechacreacion", Supabase.Postgrest.Constants.Ordering.Descending)
+                                       .Get();
+            return response.Models;
+        }
+
+        public async Task<Models.TicketServicio?> GetTicketByIdAsync(int id)
+        {
+            var client = await GetClientAsync();
+            var response = await client.From<Models.TicketServicio>().Where(x => x.Id == id).Single();
+            return response;
+        }
+
+        public async Task ActualizarTicketAsync(Models.TicketServicio ticket)
+        {
+            var client = await GetClientAsync();
+            await client.From<Models.TicketServicio>().Update(ticket);
+        }
     }
 }
