@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<BastionTech.Models.Venta>
+@{
     ViewData["Title"] = "Panel de Control";
 }
 
@@ -23,7 +24,7 @@
             }
 
             <a href="#" class="block w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors">
-                <i class="fas fa-ticket-alt w-6"></i> Mis Tickets Asignados
+                <i class="fas fa-ticket-alt w-6"></i> Mis Tickets
             </a>
         </nav>
     </aside>
@@ -40,25 +41,64 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
             @if (User.IsInRole("Admin"))
             {
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
                     <div class="p-4 bg-emerald-100 text-emerald-600 rounded-xl mr-4"><i class="fas fa-dollar-sign text-2xl"></i></div>
-                    <div><p class="text-sm text-slate-500 font-medium">Ingresos Totales</p><h3 class="text-2xl font-black text-slate-800">--</h3></div>
+                    <div><p class="text-sm text-slate-500 font-medium">Ingresos Totales</p><h3 class="text-2xl font-black text-slate-800">$@ViewBag.TotalIngresos.ToString("0.00")</h3></div>
                 </div>
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
                     <div class="p-4 bg-blue-100 text-blue-600 rounded-xl mr-4"><i class="fas fa-shopping-cart text-2xl"></i></div>
-                    <div><p class="text-sm text-slate-500 font-medium">Ventas Realizadas</p><h3 class="text-2xl font-black text-slate-800">--</h3></div>
+                    <div><p class="text-sm text-slate-500 font-medium">Ventas Realizadas</p><h3 class="text-2xl font-black text-slate-800">@ViewBag.TotalVentas</h3></div>
                 </div>
             }
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center @(User.IsInRole("Tecnico") ? "md:col-span-3" : "")">
                 <div class="p-4 bg-rose-100 text-rose-600 rounded-xl mr-4"><i class="fas fa-wrench text-2xl"></i></div>
-                <div><p class="text-sm text-slate-500 font-medium">Tickets Abiertos bajo mi Supervisión</p><h3 class="text-2xl font-black text-slate-800">--</h3></div>
+                <div><p class="text-sm text-slate-500 font-medium">Tickets Abiertos</p><h3 class="text-2xl font-black text-slate-800">@ViewBag.TicketsAbiertos</h3></div>
             </div>
-
         </div>
+
+        @if (User.IsInRole("Admin") && Model != null && Model.Any())
+        {
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <h2 class="text-lg font-black text-slate-800">Últimas Transacciones</h2>
+                    <span class="text-sm text-slate-500">Mostrando las 10 más recientes</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
+                                <th class="p-4 font-bold">Nº Venta</th>
+                                <th class="p-4 font-bold">Fecha</th>
+                                <th class="p-4 font-bold text-center">Estado</th>
+                                <th class="p-4 font-bold text-right">Total Facturado</th>
+                                <th class="p-4 font-bold text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-sm">
+                            @foreach (var venta in Model)
+                            {
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-4 font-bold text-slate-800">#@venta.Id</td>
+                                    <td class="p-4 text-slate-600">@venta.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="p-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                            @venta.Estado
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-right font-black text-slate-700">$@venta.Total.ToString("0.00")</td>
+                                    <td class="p-4 text-center">
+                                        <a asp-action="DetalleVenta" asp-route-id="@venta.Id" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">Ver Detalles</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
     </main>
 </div>

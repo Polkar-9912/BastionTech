@@ -18,9 +18,37 @@ namespace BastionTech.Controllers
         // ==========================================
         // 📊 1. DASHBOARD PRINCIPAL
         // ==========================================
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            return View();
+            // 1. Obtenemos toda la data financiera
+            var ventas = await _supabaseService.GetVentasTotalesAsync();
+
+            // 2. Calculamos las métricas y las mandamos por ViewBag
+            ViewBag.TotalIngresos = ventas.Sum(v => v.Total);
+            ViewBag.TotalVentas = ventas.Count;
+            ViewBag.TicketsAbiertos = 0; // Lo conectaremos en la Fase 4
+
+            // 3. Mandamos solo las 10 transacciones más recientes a la tabla
+            var ultimasVentas = ventas.Take(10).ToList();
+
+            return View(ultimasVentas);
+        }
+
+        // ==========================================
+        // 🧾 4. DETALLE DE TRANSACCIÓN
+        // ==========================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DetalleVenta(int id)
+        {
+            var detalles = await _supabaseService.GetDetallesDeVentaAsync(id);
+
+            if (detalles == null || !detalles.Any())
+            {
+                return NotFound("La transacción no existe o no tiene detalles registrados.");
+            }
+
+            ViewBag.VentaId = id;
+            return View(detalles);
         }
 
         // ==========================================

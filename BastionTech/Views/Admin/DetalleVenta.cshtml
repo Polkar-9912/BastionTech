@@ -1,0 +1,56 @@
+﻿@model IEnumerable<BastionTech.Models.VentaDetalle>
+@{
+    ViewData["Title"] = "Detalle de Venta";
+}
+
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center mb-8">
+        <a asp-action="Dashboard" class="text-slate-400 hover:text-blue-800 transition-colors mr-4">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h1 class="text-3xl font-black text-slate-800">Transacción #@ViewBag.VentaId</h1>
+            <p class="text-sm text-slate-500 mt-1">Desglose de artículos y servicios facturados</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-800 border-b border-slate-200 text-slate-200 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-bold">Producto / Servicio</th>
+                        <th class="p-4 font-bold text-center">Cantidad</th>
+                        <th class="p-4 font-bold text-right">Precio Unitario</th>
+                        <th class="p-4 font-bold text-right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    @{
+                        decimal totalGeneral = 0;
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var subtotal = item.Cantidad * item.PrecioUnitario;
+                        totalGeneral += subtotal;
+
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold text-slate-800">
+                                @(item.Producto?.Nombre ?? "Producto Descatalogado")
+                            </td>
+                            <td class="p-4 text-center font-bold text-slate-600">@item.Cantidad</td>
+                            <td class="p-4 text-right text-slate-600">$@item.PrecioUnitario.ToString("0.00")</td>
+                            <td class="p-4 text-right font-black text-slate-800">$@subtotal.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="bg-slate-50 border-t-2 border-slate-200">
+                    <tr>
+                        <td colspan="3" class="p-4 text-right font-bold text-slate-600 uppercase text-xs tracking-wider">Total Facturado</td>
+                        <td class="p-4 text-right font-black text-blue-800 text-xl">$@totalGeneral.ToString("0.00")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

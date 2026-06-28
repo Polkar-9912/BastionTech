@@ -134,5 +134,34 @@ namespace BastionTech.Services
             var client = await GetClientAsync();
             await client.From<Models.Producto>().Where(x => x.Id == id).Delete();
         }
+        // ==========================================
+        // 📊 CONSULTAS FINANCIERAS (ADMIN PANEL)
+        // ==========================================
+        public async Task<List<Models.Venta>> GetVentasTotalesAsync()
+        {
+            var client = await GetClientAsync();
+            // Traemos las ventas ordenadas por la fecha más reciente
+            var response = await client.From<Models.Venta>()
+                                       .Select("*")
+                                       .Order("fechatransaccion", Supabase.Postgrest.Constants.Ordering.Descending)
+                                       .Get();
+            return response.Models;
+        }
+
+        public async Task<List<Models.VentaDetalle>> GetDetallesDeVentaAsync(int ventaId)
+        {
+            var client = await GetClientAsync();
+            // Traemos los detalles y hacemos un JOIN para obtener el nombre del producto
+            var response = await client.From<Models.VentaDetalle>()
+                                       .Select("*, productos(*)")
+                                       .Where(x => x.VentaId == ventaId)
+                                       .Get();
+            return response.Models;
+        }
+        public async Task ActualizarVentaAsync(Models.Venta venta)
+        {
+            var client = await GetClientAsync();
+            await client.From<Models.Venta>().Update(venta);
+        }
     }
 }

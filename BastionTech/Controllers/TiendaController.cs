@@ -59,7 +59,7 @@ namespace BastionTech.Controllers
 
             return View();
         }
-        
+
 
         // ==========================================
         // 💳 4. PROCESAR LA COMPRA (ENDPOINT API)
@@ -74,16 +74,17 @@ namespace BastionTech.Controllers
 
             try
             {
-                // REGLA DE SEGURIDAD 1: Nunca confíes en el total que viene de Javascript. 
-                // Lo calcularemos nosotros leyendo la base de datos.
                 decimal totalReal = 0;
 
-                // 1. Crear la Cabecera de la Venta (Aún sin Total, lo actualizamos al final)
+                // 🌟 PASO 1: Limpiamos el ID. Si viene "" o null, lo transformamos en un null real de C#
+                string? clienteUuid = string.IsNullOrEmpty(pedido.ClienteId) ? null : pedido.ClienteId;
+
+                // 1. Crear la Cabecera de la Venta
                 var nuevaVenta = new Venta
                 {
-                    UsuarioId = string.IsNullOrEmpty(pedido.ClienteId) ? null : pedido.ClienteId,
+                    UsuarioId = clienteUuid, // <-- PASO 2: Usamos la variable limpia aquí
                     FechaTransaccion = DateTime.UtcNow,
-                    Total = 0, // Lo sumaremos en el bucle
+                    Total = 0,
                     Estado = "Completada"
                 };
 
@@ -92,20 +93,14 @@ namespace BastionTech.Controllers
                 // 2. Procesar cada Item del Carrito
                 foreach (var item in pedido.Items)
                 {
-                    // Obtenemos el producto real desde Supabase para evitar trampas en precios o stock
                     var productoReal = await _supabaseService.GetProductoByIdAsync(item.ProductoId);
-
                     if (productoReal == null) continue;
 
-                    // REGLA DE SEGURIDAD 2: Validar Stock (Solo si es Hardware)
                     if (!productoReal.EsServicio && productoReal.Stock < item.Cantidad)
                     {
-                        // Si falla, en un sistema real haríamos un Rollback, 
-                        // aquí lanzamos error para que Javascript lo avise.
                         throw new Exception($"Stock insuficiente para: {productoReal.Nombre}. Solo quedan {productoReal.Stock}.");
                     }
 
-                    // 3. Crear el detalle de la venta con el Precio Real de la BD
                     var detalle = new VentaDetalle
                     {
                         VentaId = ventaRegistrada.Id,
@@ -115,17 +110,15 @@ namespace BastionTech.Controllers
                     };
                     var detalleRegistrado = await _supabaseService.RegistrarDetalleVentaAsync(detalle);
 
-                    // Sumamos al total general
                     totalReal += (detalle.Cantidad * detalle.PrecioUnitario);
 
-                    // 4. LA BIFURCACIÓN (Hardware vs Servicio)
                     if (productoReal.EsServicio)
                     {
                         // ES SERVICIO IT: Generamos el Ticket de Soporte
                         var ticket = new TicketServicio
                         {
                             VentaDetalleId = detalleRegistrado.Id,
-                            ClienteId = pedido.ClienteId ?? "ANONIMO", // Dependerá del login de Supabase
+                            ClienteId = clienteUuid, // <-- PASO 3: Nada de "ANONIMO", pasamos el UUID limpio o null
                             EstadoTicket = "Pendiente",
                             FechaCreacion = DateTime.UtcNow,
                             NotasTecnicas = "Generado automáticamente tras la compra web."
@@ -134,15 +127,16 @@ namespace BastionTech.Controllers
                     }
                     else
                     {
-                        // ES HARDWARE: Descontamos el stock
                         productoReal.Stock -= item.Cantidad;
                         await _supabaseService.ActualizarProductoAsync(productoReal);
                     }
-                }
+                } // <-- Fin del foreach de los items
 
                 // 5. Actualizamos la venta con el total real calculado
                 ventaRegistrada.Total = totalReal;
-                // Opcional: Aquí podrías hacer un update a la Venta para guardar el total real en Supabase.
+
+                // ¡AQUÍ ESTÁ LA SOLUCIÓN! Enviamos el UPDATE con el total definitivo a la base de datos
+                await _supabaseService.ActualizarVentaAsync(ventaRegistrada);
 
                 return Ok(new
                 {
@@ -152,11 +146,9 @@ namespace BastionTech.Controllers
             }
             catch (Exception ex)
             {
-                // Si falta stock o algo explota, le respondemos a Javascript
                 return StatusCode(500, new { mensaje = ex.Message });
             }
         }
-
 
         // DTO para estructurar los datos que recibiremos desde JavaScript
         public class CarritoGuardadoDTO
