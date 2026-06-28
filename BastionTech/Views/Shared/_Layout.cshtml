@@ -19,7 +19,6 @@
                 </div>
 
                 <div class="flex items-center space-x-6">
-
                     @if (User.Identity == null || !User.Identity.IsAuthenticated || (!User.IsInRole("Admin") && !User.IsInRole("Tecnico")))
                     {
                         <a asp-controller="Tienda" asp-action="Carrito" class="relative p-2 text-slate-600 hover:text-blue-800 transition-colors">
@@ -30,9 +29,9 @@
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        @if (User.IsInRole("Administrador") || User.IsInRole("Tecnico"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("Tecnico"))
                         {
-                            <a href="#" class="text-sm font-bold text-emerald-600 hover:text-emerald-700">
+                            <a asp-controller="Admin" asp-action="Dashboard" class="text-sm font-bold text-emerald-600 hover:text-emerald-700">
                                 <i class="fas fa-shield-alt mr-1"></i> Dashboard
                             </a>
                         }

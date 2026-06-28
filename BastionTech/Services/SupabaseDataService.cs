@@ -123,5 +123,16 @@ namespace BastionTech.Services
 
             return response.Models;
         }
+        public async Task InsertarProductoAsync(Models.Producto producto)
+        {
+            var client = await GetClientAsync();
+            await client.From<Models.Producto>().Insert(producto);
+        }
+
+        public async Task EliminarProductoAsync(int id)
+        {
+            var client = await GetClientAsync();
+            await client.From<Models.Producto>().Where(x => x.Id == id).Delete();
+        }
     }
 }

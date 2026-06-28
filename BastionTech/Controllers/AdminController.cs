@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BastionTech.Services;
 
 namespace BastionTech.Controllers
 {
-    // [Authorize(Roles = "Admin")] // Lo descomentaremos cuando configuremos las cookies de sesión
+    // Candado perimetral: Solo personal autorizado entra al controlador
+    [Authorize(Roles = "Admin,Tecnico")]
     public class AdminController : Controller
     {
         private readonly SupabaseDataService _supabaseService;
@@ -18,26 +20,84 @@ namespace BastionTech.Controllers
         // ==========================================
         public IActionResult Dashboard()
         {
-            // Aquí cargaremos métricas: Total de ventas, tickets abiertos, etc.
             return View();
         }
 
         // ==========================================
         // 📦 2. GESTIÓN DE INVENTARIO (CRUD)
         // ==========================================
+        // REGLA CRÍTICA: Bloqueo estricto a nivel de método. El técnico recibirá un 403 Forbidden aquí.
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Inventario()
         {
-            // Reutilizamos el servicio para traer los productos a la vista de tabla del admin
             var productos = await _supabaseService.GetProductosAsync();
             return View(productos);
+        }
+        // ==========================================
+        // ➕ CREAR PRODUCTO (Create)
+        // ==========================================
+        [Authorize(Roles = "Admin")]
+        public IActionResult CrearProducto()
+        {
+            return View(new Models.Producto()); // Mandamos un modelo vacío al formulario
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CrearProducto(Models.Producto producto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _supabaseService.InsertarProductoAsync(producto);
+                TempData["MensajeExito"] = "Artículo creado y añadido al catálogo correctamente.";
+                return RedirectToAction("Inventario");
+            }
+            return View(producto);
+        }
+
+        // ==========================================
+        // ✏️ EDITAR PRODUCTO (Update)
+        // ==========================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditarProducto(int id)
+        {
+            var producto = await _supabaseService.GetProductoByIdAsync(id);
+            if (producto == null) return NotFound();
+
+            return View(producto);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditarProducto(Models.Producto producto)
+        {
+            if (ModelState.IsValid)
+            {
+                await _supabaseService.ActualizarProductoAsync(producto);
+                TempData["MensajeExito"] = "El artículo fue actualizado con éxito.";
+                return RedirectToAction("Inventario");
+            }
+            return View(producto);
+        }
+
+        // ==========================================
+        // 🗑️ ELIMINAR PRODUCTO (Delete)
+        // ==========================================
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EliminarProducto(int id)
+        {
+            await _supabaseService.EliminarProductoAsync(id);
+            TempData["MensajeExito"] = "El artículo ha sido eliminado definitivamente.";
+            return RedirectToAction("Inventario");
         }
 
         // ==========================================
         // 📄 3. REPORTES
         // ==========================================
+        [Authorize(Roles = "Admin")]
         public IActionResult Reportes()
         {
-            // Vista para descargar los PDFs de los reportes del Blue Team
             return View();
         }
     }
