@@ -33,6 +33,70 @@ namespace BastionTech.Controllers
         }
 
         // ==========================================
+        // 📊 PANEL DE REPORTES Y ANALÍTICA (GERENCIA)
+        // ==========================================
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Reportes()
+        {
+            // 1. Inicializamos el ViewModel vacío
+            var viewModel = new Models.ReportesViewModel();
+
+            // 2. Extraemos los conjuntos de datos en crudo desde Supabase
+            var ventas = await _supabaseService.GetVentasTotalesAsync();
+            var tickets = await _supabaseService.GetTicketsAsync();
+
+            // 3. Procesamiento de Métricas Financieras Básicas
+            viewModel.TotalOrdenes = ventas?.Count ?? 0;
+            viewModel.IngresosTotales = ventas?.Sum(v => v.Total) ?? 0;
+
+            // 4. Procesamiento de Métricas Operativas (Resolución de Mesa de Ayuda)
+            if (tickets != null && tickets.Any())
+            {
+                viewModel.TicketPendientes = tickets.Count(t => t.EstadoTicket == "Pendiente");
+                viewModel.TicketEnProceso = tickets.Count(t => t.EstadoTicket == "En Proceso");
+                viewModel.TicketResueltos = tickets.Count(t => t.EstadoTicket == "Resuelto");
+            }
+
+            // 5. Procesamiento del Ranking de Productos (El Core Analítico)
+            if (ventas != null && ventas.Any())
+            {
+                var todosLosDetalles = new List<Models.VentaDetalle>();
+
+                // Recolectamos el detalle de todas las ventas (hardware y servicios)
+                // Nota arquitectónica: Para este MVP hacemos las consultas iterativas.
+                foreach (var venta in ventas)
+                {
+                    var detalles = await _supabaseService.GetDetallesDeVentaAsync(venta.Id);
+                    if (detalles != null)
+                    {
+                        todosLosDetalles.AddRange(detalles);
+                    }
+                }
+
+                // 🌟 MAGIA LINQ: Agrupamos, sumamos, ordenamos y cortamos el Top 5
+                viewModel.ProductosMasVendidos = todosLosDetalles
+                    .Where(d => d.Producto != null) // Filtro de seguridad
+                    .GroupBy(d => d.ProductoId)     // Agrupamos por ID del producto
+                    .Select(grupo => new Models.ProductoRanking
+                    {
+                        ProductoId = grupo.Key,
+                        NombreProducto = grupo.First().Producto.Nombre, // Tomamos el nombre del primer elemento del grupo
+                        CantidadVendida = grupo.Sum(d => d.Cantidad),   // Sumatoria total de unidades desplazadas
+                        TotalRecaudado = grupo.Sum(d => d.Cantidad * d.PrecioUnitario), // Dinero total generado por este item
+                        EsServicio = grupo.First().Producto.EsServicio
+                    })
+                    .OrderByDescending(p => p.CantidadVendida) // El de mayor rotación primero
+                    .Take(5) // Limitamos estrictamente a los 5 mejores
+                    .ToList();
+            }
+
+            // 6. Inyectamos el paquete procesado a la vista
+            return View(viewModel);
+        }
+
+        // ==========================================
         // 🧾 4. DETALLE DE TRANSACCIÓN
         // ==========================================
         [Authorize(Roles = "Admin")]
@@ -118,14 +182,7 @@ namespace BastionTech.Controllers
             return RedirectToAction("Inventario");
         }
 
-        // ==========================================
-        // 📄 3. REPORTES
-        // ==========================================
-        [Authorize(Roles = "Admin")]
-        public IActionResult Reportes()
-        {
-            return View();
-        }
+       
         // ==========================================
         // 🛠️ 5. CONSOLA DE SOPORTE TÉCNICO
         // ==========================================

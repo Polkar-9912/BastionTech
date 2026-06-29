@@ -1,0 +1,81 @@
+﻿@model BastionTech.Models.ReportesViewModel
+@{
+    ViewData["Title"] = "Panel de Reportes";
+}
+
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-slate-800">Panel Gerencial</h1>
+        <p class="text-slate-500">Resumen operativo y financiero de la plataforma</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-6 rounded-2xl shadow-lg text-white">
+            <p class="text-blue-200 text-sm font-bold uppercase tracking-wider">Ingresos Totales</p>
+            <h2 class="text-4xl font-black mt-2">Bs. @Model.IngresosTotales.ToString("N2")</h2>
+            <p class="text-blue-300 text-xs mt-1">@Model.TotalOrdenes órdenes procesadas</p>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-lg text-white">
+            <p class="text-emerald-200 text-sm font-bold uppercase tracking-wider">Ticket Promedio</p>
+            <h2 class="text-4xl font-black mt-2">Bs. @Model.TicketPromedio.ToString("N2")</h2>
+            <p class="text-emerald-300 text-xs mt-1">Gasto medio por cliente</p>
+        </div>
+        <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-2xl shadow-lg text-white">
+            <p class="text-slate-300 text-sm font-bold uppercase tracking-wider">Soporte Operativo</p>
+            <h2 class="text-4xl font-black mt-2">@Model.TotalTickets</h2>
+            <p class="text-slate-400 text-xs mt-1">Incidentes totales registrados</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-6">Estado de la Mesa de Ayuda</h3>
+            <div class="space-y-4">
+                @{
+                    var estados = new[] {
+                        new { Label = "Pendientes", Value = Model.TicketPendientes, Color = "bg-red-500" },
+                        new { Label = "En Proceso", Value = Model.TicketEnProceso, Color = "bg-blue-500" },
+                        new { Label = "Resueltos", Value = Model.TicketResueltos, Color = "bg-emerald-500" }
+                    };
+                }
+                @foreach (var e in estados)
+                {
+                    <div>
+                        <div class="flex justify-between text-sm font-bold mb-1">
+                            <span class="text-slate-600">@e.Label</span>
+                            <span class="text-slate-800">@e.Value</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3">
+                            <div class="@e.Color h-3 rounded-full" style="width: @(Model.TotalTickets > 0 ? (e.Value * 100 / Model.TotalTickets) : 0)%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">Top 5 Productos Rentables</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-slate-400 text-xs uppercase text-left">
+                            <th class="pb-3">Producto</th>
+                            <th class="pb-3 text-right">Ventas</th>
+                            <th class="pb-3 text-right">Recaudado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach (var prod in Model.ProductosMasVendidos)
+                        {
+                            <tr>
+                                <td class="py-3 font-bold text-slate-700">@prod.NombreProducto</td>
+                                <td class="py-3 text-right font-medium">@prod.CantidadVendida</td>
+                                <td class="py-3 text-right font-black text-blue-800">Bs. @prod.TotalRecaudado.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
