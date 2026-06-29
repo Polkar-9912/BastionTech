@@ -2,13 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 
-# Copiar archivos de proyecto y restaurar dependencias
-COPY *.sln ./
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copiar el resto del código y compilar
+# Copiamos todo el código fuente al contenedor de un solo golpe
 COPY . ./
+
+# Restauramos dependencias y compilamos
+RUN dotnet restore
 RUN dotnet publish -c Release -o out
 
 # 2. Etapa de ejecución
