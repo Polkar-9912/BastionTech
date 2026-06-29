@@ -25,6 +25,10 @@
                             <i class="fas fa-shopping-cart text-xl"></i>
                             <span id="contador-carrito" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-rose-500 rounded-full">0</span>
                         </a>
+
+                        <a asp-controller="Tienda" asp-action="AbrirTicket" class="text-sm font-bold text-slate-600 hover:text-blue-800 transition-colors">
+                            <i class="fas fa-headset mr-1"></i> Soporte
+                        </a>
                     }
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated)

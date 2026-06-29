@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
-using BastionTech.Services;
 using BastionTech.Models;
+using BastionTech.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BastionTech.Controllers
 {
@@ -20,10 +20,6 @@ namespace BastionTech.Controllers
         public async Task<IActionResult> Index()
         {
             var catalogo = await _supabaseService.GetProductosAsync();
-
-            // Opcional: Podrías filtrar aquí para que solo muestre productos con Stock > 0
-            // var catalogoActivo = catalogo.Where(p => p.Stock > 0 || p.EsServicio).ToList();
-
             return View(catalogo);
         }
 
@@ -60,7 +56,6 @@ namespace BastionTech.Controllers
             return View();
         }
 
-
         // ==========================================
         // 💳 4. PROCESAR LA COMPRA (ENDPOINT API)
         // ==========================================
@@ -75,14 +70,11 @@ namespace BastionTech.Controllers
             try
             {
                 decimal totalReal = 0;
-
-                // 🌟 PASO 1: Limpiamos el ID. Si viene "" o null, lo transformamos en un null real de C#
                 string? clienteUuid = string.IsNullOrEmpty(pedido.ClienteId) ? null : pedido.ClienteId;
 
-                // 1. Crear la Cabecera de la Venta
                 var nuevaVenta = new Venta
                 {
-                    UsuarioId = clienteUuid, // <-- PASO 2: Usamos la variable limpia aquí
+                    UsuarioId = clienteUuid,
                     FechaTransaccion = DateTime.UtcNow,
                     Total = 0,
                     Estado = "Completada"
@@ -90,7 +82,6 @@ namespace BastionTech.Controllers
 
                 var ventaRegistrada = await _supabaseService.RegistrarVentaAsync(nuevaVenta);
 
-                // 2. Procesar cada Item del Carrito
                 foreach (var item in pedido.Items)
                 {
                     var productoReal = await _supabaseService.GetProductoByIdAsync(item.ProductoId);
@@ -114,11 +105,10 @@ namespace BastionTech.Controllers
 
                     if (productoReal.EsServicio)
                     {
-                        // ES SERVICIO IT: Generamos el Ticket de Soporte
                         var ticket = new TicketServicio
                         {
                             VentaDetalleId = detalleRegistrado.Id,
-                            ClienteId = clienteUuid, // <-- PASO 3: Nada de "ANONIMO", pasamos el UUID limpio o null
+                            ClienteId = clienteUuid,
                             EstadoTicket = "Pendiente",
                             FechaCreacion = DateTime.UtcNow,
                             NotasTecnicas = "Generado automáticamente tras la compra web."
@@ -130,12 +120,9 @@ namespace BastionTech.Controllers
                         productoReal.Stock -= item.Cantidad;
                         await _supabaseService.ActualizarProductoAsync(productoReal);
                     }
-                } // <-- Fin del foreach de los items
+                }
 
-                // 5. Actualizamos la venta con el total real calculado
                 ventaRegistrada.Total = totalReal;
-
-                // ¡AQUÍ ESTÁ LA SOLUCIÓN! Enviamos el UPDATE con el total definitivo a la base de datos
                 await _supabaseService.ActualizarVentaAsync(ventaRegistrada);
 
                 return Ok(new
@@ -150,22 +137,55 @@ namespace BastionTech.Controllers
             }
         }
 
-        // DTO para estructurar los datos que recibiremos desde JavaScript
-        public class CarritoGuardadoDTO
+        // ==========================================
+        // 🛠️ 5. APERTURA MANUAL DE TICKETS (PÚBLICO)
+        // ==========================================
+        [HttpGet]
+        public IActionResult AbrirTicket()
         {
-            public int ProductoId { get; set; }
-            public int Cantidad { get; set; }
-            public bool EsServicio { get; set; }
+            return View(new Models.TicketServicio());
         }
-    }
+
+        [HttpPost]
+        public async Task<IActionResult> AbrirTicket(Models.TicketServicio ticket)
+        {
+            try
+            {
+                ticket.EstadoTicket = "Pendiente";
+                ticket.FechaCreacion = DateTime.UtcNow;
+
+                // Ahora sí funciona porque este método está dentro del Controlador
+                if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    ticket.ClienteId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                }
+
+                await _supabaseService.RegistrarTicketServicioAsync(ticket);
+
+                TempData["MensajeExito"] = "Tu solicitud de soporte ha sido registrada con éxito. Nuestro equipo técnico la revisará en breve.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Hubo un error de conexión: " + ex.Message);
+                return View(ticket);
+            }
+        }
+    } // <-- AQUÍ SE CIERRA LA CLASE TIENDACONTROLLER
 
     // ==========================================
     // 📦 DTOs (Data Transfer Objects) Auxiliares
     // ==========================================
-    // Estas clases pequeñas sirven solo para recibir la información de Javascript
+    public class CarritoGuardadoDTO
+    {
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public bool EsServicio { get; set; }
+    }
+
     public class PedidoCheckoutDTO
     {
-        public string ClienteId { get; set; } = string.Empty; // Vendrá de la sesión de Supabase Auth
+        public string ClienteId { get; set; } = string.Empty;
         public List<ItemCarritoDTO> Items { get; set; } = new List<ItemCarritoDTO>();
         public decimal TotalCalculado { get; set; }
     }
@@ -177,5 +197,4 @@ namespace BastionTech.Controllers
         public decimal PrecioUnitario { get; set; }
         public bool EsServicio { get; set; }
     }
-
 }

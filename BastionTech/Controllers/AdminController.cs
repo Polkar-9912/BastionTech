@@ -129,11 +129,37 @@ namespace BastionTech.Controllers
         // ==========================================
         // 🛠️ 5. CONSOLA DE SOPORTE TÉCNICO
         // ==========================================
-        // Nota: NO ponemos [Authorize(Roles="Admin")] aquí. Heredará el acceso para Administradores y Técnicos.
 
+        // ==========================================
+        // 🛠️ 5. BANDEJA DE TICKETS SEGMENTADA
+        // ==========================================
         public async Task<IActionResult> Tickets()
         {
-            var tickets = await _supabaseService.GetTicketsAsync();
+            List<Models.TicketServicio> tickets;
+
+            if (User.IsInRole("Admin"))
+            {
+                // El Administrador mantiene el control total del centro de mando
+                tickets = await _supabaseService.GetTicketsAsync();
+            }
+            else if (User.IsInRole("Tecnico"))
+            {
+                // Extraemos el UUID de la sesión actual del Técnico
+                var tecnicoId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (string.IsNullOrEmpty(tecnicoId))
+                {
+                    return Challenge(); // Redirige a Login por seguridad si no se encuentra la identidad
+                }
+
+                // Cargamos exclusivamente su carga de trabajo asignada
+                tickets = await _supabaseService.GetTicketsPorTecnicoAsync(tecnicoId);
+            }
+            else
+            {
+                return Forbid(); // Bloqueo absoluto para cualquier otro rol no autorizado
+            }
+
             return View(tickets);
         }
 
@@ -141,15 +167,22 @@ namespace BastionTech.Controllers
         {
             var ticket = await _supabaseService.GetTicketByIdAsync(id);
             if (ticket == null) return NotFound("Ticket no encontrado.");
+
+            // 🌟 NUEVO: Si es Administrador, traemos el staff técnico para llenar el dropdown
+            if (User.IsInRole("Admin"))
+            {
+                ViewBag.Tecnicos = await _supabaseService.GetTecnicosDisponiblesAsync();
+            }
+
             return View(ticket);
         }
 
         [HttpPost]
         public async Task<IActionResult> GestionarTicket(Models.TicketServicio modelo)
         {
-            // Actualizamos la información en Supabase
+            // Actualizamos el registro completo en Supabase (incluyendo el nuevo TecnicoAsignadoId)
             await _supabaseService.ActualizarTicketAsync(modelo);
-            TempData["MensajeExito"] = "El estado del ticket y las notas técnicas se han actualizado correctamente.";
+            TempData["MensajeExito"] = "La orden de trabajo ha sido actualizada con éxito.";
             return RedirectToAction("Tickets");
         }
     }

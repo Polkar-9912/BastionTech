@@ -14,34 +14,87 @@
         </div>
     </div>
 
+    @if (!string.IsNullOrEmpty(Model.Telefono))
+    {
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-2xl shadow-md mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Canal de Comunicación Directa</span>
+                <h3 class="text-xl font-black mt-0.5"><i class="fas fa-user-circle mr-2 text-slate-400"></i>Datos del Solicitante</h3>
+                <p class="text-slate-300 text-sm mt-1">Número registrado: <span class="font-bold text-white">@Model.Telefono</span></p>
+            </div>
+
+            <div class="flex flex-wrap gap-3 w-full sm:w-auto">
+                <a href="tel:@Model.Telefono" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors flex items-center justify-center">
+                    <i class="fas fa-phone-alt mr-2"></i> Llamar
+                </a>
+
+                <a href="https://wa.me/@Model.Telefono.Replace(" ", "").Replace("+", "").Replace("-", "")" target="_blank" class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold transition-colors flex items-center justify-center">
+                    <i class="fab fa-whatsapp mr-2 text-sm"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="bg-slate-100 text-slate-600 p-5 rounded-2xl border border-slate-200 mb-6 flex items-center">
+            <div class="p-3 bg-slate-200 text-slate-500 rounded-xl mr-4">
+                <i class="fas fa-exclamation-circle text-xl"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-slate-700">Sin información de contacto directo</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Este ticket fue generado automáticamente o el usuario no especificó un número de teléfono.</p>
+            </div>
+        </div>
+    }
+
     <form asp-action="GestionarTicket" method="post" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
 
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="VentaDetalleId" />
         <input type="hidden" asp-for="ClienteId" />
         <input type="hidden" asp-for="FechaCreacion" />
+        <input type="hidden" asp-for="Telefono" /> <div class="space-y-6">
 
-        <div class="space-y-6">
-
+        @if (User.IsInRole("Admin"))
+        {
             <div>
-                <label asp-for="EstadoTicket" class="block text-sm font-bold text-slate-700 mb-2">Estado Operativo</label>
-                <select asp-for="EstadoTicket" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50 font-medium text-slate-800">
-                    <option value="Pendiente">🔴 Pendiente (En espera de asignación)</option>
-                    <option value="En Proceso">🔵 En Proceso (Técnico trabajando)</option>
-                    <option value="Resuelto">🟢 Resuelto (Servicio finalizado con éxito)</option>
+                <label asp-for="TecnicoAsignadoId" class="block text-sm font-bold text-slate-700 mb-2">Asignar Especialista de Soporte</label>
+                <select asp-for="TecnicoAsignadoId" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50 font-medium text-slate-800">
+                    <option value="">-- Bolsa de Trabajo (Sin Asignar) --</option>
+                    @if (ViewBag.Tecnicos != null)
+                    {
+                        foreach (var tecnico in ViewBag.Tecnicos as List<BastionTech.Models.Usuario>)
+                        {
+                            <option value="@tecnico.Id">@tecnico.NombreCompleto</option>
+                        }
+                    }
                 </select>
             </div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="TecnicoAsignadoId" />
+        }
 
-            <div>
-                <label asp-for="NotasTecnicas" class="block text-sm font-bold text-slate-700 mb-2">Bitácora y Notas Técnicas</label>
-                <textarea asp-for="NotasTecnicas" rows="6" placeholder="Escribe aquí las observaciones del hardware, reportes de reparación o justificaciones técnicas..." class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"></textarea>
-            </div>
-
+        <div>
+            <label asp-for="EstadoTicket" class="block text-sm font-bold text-slate-700 mb-2">Estado Operativo</label>
+            <select asp-for="EstadoTicket" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-slate-50 font-medium text-slate-800">
+                <option value="Pendiente">🔴 Pendiente (En espera de asignación)</option>
+                <option value="En Proceso">🔵 En Proceso (Técnico trabajando)</option>
+                <option value="Resuelto">🟢 Resuelto (Servicio finalizado con éxito)</option>
+            </select>
         </div>
 
-        <div class="mt-8 flex justify-end space-x-4">
-            <a asp-action="Tickets" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</a>
-            <button type="submit" class="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg font-bold shadow-sm transition-colors">Guardar Reporte</button>
+        <div>
+            <label asp-for="NotasTecnicas" class="block text-sm font-bold text-slate-700 mb-2">Bitácora y Notas Técnicas</label>
+            <textarea asp-for="NotasTecnicas" rows="6" placeholder="Escribe aquí las observaciones del hardware, reportes de reparación o justificaciones técnicas..." class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"></textarea>
         </div>
-    </form>
+
+    </div>
+
+    <div class="mt-8 flex justify-end space-x-4">
+        <a asp-action="Tickets" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</a>
+        <button type="submit" class="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg font-bold shadow-sm transition-colors">Guardar Reporte</button>
+    </div>
+</form>
 </div>

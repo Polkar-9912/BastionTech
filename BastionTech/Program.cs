@@ -5,7 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Registrar nuestro servicio de Supabase
+// 🌐 REGISTRAR NUESTRO SERVICIO CENTRALIZADO DE SUPABASE
+// .NET le pasará automáticamente la configuración (IConfiguration) al servicio
 builder.Services.AddSingleton<BastionTech.Services.SupabaseDataService>();
 
 // 🛡️ CONFIGURAR AUTENTICACIÓN POR COOKIES DE .NET
@@ -31,6 +32,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Tienda}/{action=Index}/{id?}")
