@@ -99,7 +99,7 @@ function renderizarCarrito() {
                     <p class="text-sm font-medium ${item.esServicio ? 'text-purple-600' : 'text-slate-500'}">
                         ${item.esServicio ? '🔧 Servicio IT' : '📦 Hardware'}
                     </p>
-                    <p class="text-slate-600 mt-1">Precio: $${item.precio.toFixed(2)} c/u</p>
+                    <p class="text-slate-600 mt-1">Precio: Bs. ${item.precio.toFixed(2)} c/u</p>
                 </div>
 
                 <div class="flex items-center gap-6">
@@ -109,8 +109,8 @@ function renderizarCarrito() {
                         <button onclick="actualizarCantidad(${item.id || item.productoId}, 1)" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-r-lg font-bold transition-colors">+</button>
                     </div>
 
-                    <div class="text-right w-24">
-                        <span class="block font-black text-slate-800 text-lg">$${subtotal.toFixed(2)}</span>
+                    <div class="text-right w-28">
+                        <span class="block font-black text-slate-800 text-lg">Bs. ${subtotal.toFixed(2)}</span>
                     </div>
 
                     <button onclick="eliminarDelCarrito(${item.id || item.productoId})" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors" title="Eliminar del carrito">
@@ -122,18 +122,39 @@ function renderizarCarrito() {
     });
 
     contenedorItems.innerHTML = html;
-    spanTotal.innerText = '$' + sumaTotal.toFixed(2);
+    spanTotal.innerText = 'Bs. ' + sumaTotal.toFixed(2);
 }
 
+a// Reemplaza únicamente la función procesarCheckout de tu carrito.js con esta versión integrada
 async function procesarCheckout() {
     const carrito = obtenerCarrito();
     if (carrito.length === 0) return;
 
+    // Captura de nuevos campos del formulario del DOM
+    const correo = document.getElementById('checkout-correo')?.value.trim();
+    const telefono = document.getElementById('checkout-telefono')?.value.trim();
+    const direccion = document.getElementById('checkout-direccion')?.value.trim();
+    const metodoPago = document.getElementById('checkout-metodopago')?.value;
+
+    // Validación defensiva en el cliente
+    if (!correo || !telefono || !direccion || !metodoPago) {
+        alert("Por favor, completa todos los campos requeridos para coordinar la entrega y el pago.");
+        return;
+    }
+
     const btn = document.getElementById('btn-checkout');
-    if (btn) { btn.disabled = true; btn.innerText = 'Procesando pago...'; btn.classList.add('opacity-75'); }
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Procesando orden...';
+        btn.classList.add('opacity-75');
+    }
 
     const pedidoDTO = {
-        ClienteId: "",
+        ClienteId: "", // Se procesará y limpiará de forma segura en el Controlador de C#
+        Correo: correo,
+        Telefono: telefono,
+        Direccion: direccion,
+        MetodoPago: metodoPago,
         TotalCalculado: 0,
         Items: carrito.map(item => ({
             ProductoId: item.id || item.productoId,
@@ -153,16 +174,16 @@ async function procesarCheckout() {
         const data = await response.json();
 
         if (response.ok) {
-            alert("¡Éxito! " + data.mensaje);
             localStorage.removeItem(CLAVE_CARRITO);
-            window.location.href = '/Tienda/Index';
+            // Redirección inmediata al recibo dinámico de compra
+            window.location.href = `/Tienda/Recibo/${data.ventaId}`;
         } else {
-            alert("Ups: " + data.mensaje);
+            alert("Error al procesar el pedido: " + data.mensaje);
             if (btn) { btn.disabled = false; btn.innerText = 'Finalizar Compra'; btn.classList.remove('opacity-75'); }
         }
     } catch (error) {
         console.error('Error conectando al servidor:', error);
-        alert("Hubo un error de conexión con el servidor.");
+        alert("Hubo un error de conexión con el servidor remoto.");
         if (btn) { btn.disabled = false; btn.innerText = 'Finalizar Compra'; btn.classList.remove('opacity-75'); }
     }
 }

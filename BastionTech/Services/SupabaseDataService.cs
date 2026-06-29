@@ -90,6 +90,13 @@ namespace BastionTech.Services
             await client.From<Models.TicketServicio>().Insert(ticket);
         }
 
+        public async Task<Models.Venta?> GetVentaByIdAsync(int id)
+        {
+            var client = await GetClientAsync();
+            var response = await client.From<Models.Venta>().Where(x => x.Id == id).Single();
+            return response;
+        }
+
         // ==========================================
         // 👥 GESTIÓN DE USUARIOS
         // ==========================================

@@ -1,0 +1,112 @@
+﻿@model BastionTech.Models.Venta
+@{
+    ViewData["Title"] = "Recibo de Compra";
+}
+
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-10 text-white flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight">BastionTech</h1>
+                <p class="text-slate-400 text-sm mt-1">Comprobante de Orden</p>
+            </div>
+            <div class="text-right">
+                <p class="text-2xl font-bold text-emerald-400">Orden #@Model.Id</p>
+                <p class="text-sm text-slate-300">@Model.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+
+        <div class="px-8 py-6 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row justify-between gap-6">
+            <div>
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Datos de Contacto y Envío</h3>
+                <p class="text-sm text-slate-800 font-medium"><i class="fas fa-envelope text-slate-400 w-5"></i> @(string.IsNullOrEmpty(Model.Correo) ? "No registrado" : Model.Correo)</p>
+                <p class="text-sm text-slate-800 font-medium mt-1.5"><i class="fas fa-phone text-slate-400 w-5"></i> @(string.IsNullOrEmpty(Model.Telefono) ? "No registrado" : Model.Telefono)</p>
+                <p class="text-sm text-slate-800 font-medium mt-1.5"><i class="fas fa-map-marker-alt text-slate-400 w-5"></i> @(string.IsNullOrEmpty(Model.Direccion) ? "No registrada" : Model.Direccion)</p>
+            </div>
+            <div class="md:text-right">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Método de Pago</h3>
+                <span class="inline-block px-4 py-1.5 bg-blue-100 text-blue-800 text-sm font-bold rounded-lg border border-blue-200">
+                    @(string.IsNullOrEmpty(Model.MetodoPago) ? "No especificado" : Model.MetodoPago)
+                </span>
+            </div>
+        </div>
+
+        @if (Model.MetodoPago == "Efectivo")
+        {
+            <div class="bg-emerald-50 border-b border-emerald-100 p-8 flex flex-col md:flex-row gap-6 items-center">
+                <div class="p-4 bg-white rounded-xl shadow-sm border border-emerald-100 flex-shrink-0">
+                    <i class="fas fa-money-bill-wave text-6xl text-emerald-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-emerald-800 mb-2">Pago al Entregar</h3>
+                    <p class="text-sm text-emerald-700">
+                        Has seleccionado pagar en efectivo al momento de la entrega. Por favor, ten preparado el monto exacto de <strong>Bs. @Model.Total.ToString("0.00")</strong>. Nuestro personal se contactará al número registrado para coordinar el despacho.
+                    </p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-blue-50 border-b border-blue-100 p-8 flex flex-col md:flex-row gap-6 items-center">
+                <div class="p-4 bg-white rounded-xl shadow-sm border border-blue-100 flex-shrink-0">
+                    <i class="fas @(Model.MetodoPago == "QR" ? "fa-qrcode" : "fa-university") text-6xl text-slate-800"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Instrucciones de Pago (@Model.MetodoPago)</h3>
+                    <p class="text-sm text-slate-600 mb-2">
+                        Para confirmar tu compra y habilitar el despacho o el servicio técnico, @(Model.MetodoPago == "QR" ? "escanea nuestro código QR" : "realiza una transferencia bancaria") a la siguiente cuenta:
+                    </p>
+                    <ul class="text-sm text-slate-700 font-medium space-y-1">
+                        <li><i class="fas fa-university mr-2 text-blue-600"></i> Banco Nacional / Unión</li>
+                        <li><i class="fas fa-hashtag mr-2 text-blue-600"></i> Cuenta: 1000-4567-8901</li>
+                        <li><i class="fas fa-user mr-2 text-blue-600"></i> Titular: BastionTech IT</li>
+                    </ul>
+                </div>
+            </div>
+        }
+
+        <div class="p-8">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Detalle de Adquisición</h3>
+
+            <div class="space-y-3">
+                @if (ViewBag.Detalles != null)
+                {
+                    foreach (var detalle in ViewBag.Detalles as List<BastionTech.Models.VentaDetalle>)
+                    {
+                        <div class="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
+                            <div>
+                                <p class="font-bold text-slate-700">@detalle.Producto.Nombre</p>
+                                <p class="text-xs text-slate-500">Cantidad: @detalle.Cantidad x Bs. @detalle.PrecioUnitario.ToString("0.00")</p>
+
+                                @if (detalle.Producto.EsServicio)
+                                {
+                                    <span class="inline-block mt-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded">
+                                        <i class="fas fa-ticket-alt mr-1"></i> Ticket Automático Generado
+                                    </span>
+                                }
+                            </div>
+                            <div class="font-black text-slate-800">
+                                Bs. @((detalle.Cantidad * detalle.PrecioUnitario).ToString("0.00"))
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-slate-200 flex justify-between items-center">
+                <span class="text-xl font-bold text-slate-600">Total a Pagar</span>
+                <span class="text-3xl font-black text-blue-800">Bs. @Model.Total.ToString("0.00")</span>
+            </div>
+        </div>
+
+        <div class="bg-slate-50 p-6 flex justify-end space-x-4 border-t border-slate-200 hidden-print">
+            <button onclick="window.print()" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-slate-100 transition-colors">
+                <i class="fas fa-print mr-2"></i> Imprimir
+            </button>
+            <a asp-controller="Tienda" asp-action="Index" class="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg font-bold shadow-sm transition-colors">
+                Volver a la Tienda
+            </a>
+        </div>
+    </div>
+</div>

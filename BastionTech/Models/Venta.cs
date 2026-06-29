@@ -20,5 +20,17 @@ namespace BastionTech.Models
 
         [Column("estado")]
         public string Estado { get; set; } = "Completada";
+
+        [Column("correo")]
+        public string? Correo { get; set; }
+
+        [Column("telefono")]
+        public string? Telefono { get; set; }
+
+        [Column("direccion")]
+        public string? Direccion { get; set; }
+
+        [Column("metodopago")]
+        public string? MetodoPago { get; set; }
     }
 }

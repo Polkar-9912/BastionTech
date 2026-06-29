@@ -1,29 +1,68 @@
-﻿@{
-    ViewData["Title"] = "Mi Carrito";
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Carrito de Compras";
+    // Capturamos el correo de la sesión si el usuario está autenticado
+    var correoAutocompletado = User.Identity?.IsAuthenticated == true
+        ? User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity.Name
+        : "";
 }
 
-<div class="max-w-4xl mx-auto my-8">
-    <h1 class="text-3xl font-black text-slate-900 mb-8">Mi Carrito de Compras</h1>
+<div class="py-6">
+    <h1 class="text-3xl font-black text-slate-800 tracking-tight mb-8">
+        <i class="fas fa-shopping-cart text-blue-800 mr-2"></i>Tu Carrito de Compras
+    </h1>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-
-        <div id="contenedor-carrito-items">
-            <div class="p-8 text-center text-slate-500">Cargando carrito...</div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden" id="contenedor-carrito-items">
         </div>
 
-        <div id="contenedor-totales" class="bg-slate-50 p-6 border-t border-slate-100 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <span class="text-lg font-semibold text-slate-600">Total a pagar:</span>
-                <span id="total-carrito" class="text-3xl font-black text-blue-800">$0.00</span>
-            </div>
+        <div id="contenedor-totales" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-xl font-bold text-slate-800 border-b pb-3 mb-4">Resumen de Orden</h2>
 
-            <div class="flex justify-end gap-4">
-                <button onclick="vaciarCarrito()" class="px-6 py-3 font-semibold text-slate-500 hover:bg-slate-200 rounded-lg transition-colors">
-                    Vaciar carrito
-                </button>
-                <button id="btn-checkout" onclick="procesarCheckout()" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-sm transition-colors text-lg">
-                    Finalizar Compra
-                </button>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-slate-600 font-medium">Total Estimado:</span>
+                    <span id="total-carrito" class="text-2xl font-black text-blue-800">Bs. 0.00</span>
+                </div>
+
+                <div class="space-y-4 border-t pt-4">
+                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Datos de Facturación y Envío</h3>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Correo Electrónico *</label>
+                        <input id="checkout-correo" type="email" required value="@correoAutocompletado" class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="ejemplo@correo.com" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Teléfono / Celular de Contacto *</label>
+                        <input id="checkout-telefono" type="tel" required class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 70000000" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Dirección de Entrega o Domicilio *</label>
+                        <input id="checkout-direccion" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Av. América Este #123" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Método de Pago Seleccionado *</label>
+                        <select id="checkout-metodopago" required class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                            <option value="">-- Elige una opción --</option>
+                            <option value="QR">📱 Código QR Simple</option>
+                            <option value="Transferencia">🏦 Transferencia Bancaria Directa</option>
+                            <option value="Efectivo">💵 Pago en Efectivo al Entregar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 space-y-3">
+                    <button id="btn-checkout" onclick="procesarCheckout()" class="w-full py-3 bg-blue-800 hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-lock"></i> Finalizar Compra
+                    </button>
+
+                    <button onclick="vaciarCarrito()" class="w-full py-2 text-sm text-slate-400 hover:text-rose-600 transition-colors">
+                        Vaciar Todo el Carrito
+                    </button>
+                </div>
             </div>
         </div>
     </div>

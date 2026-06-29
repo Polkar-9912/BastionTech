@@ -72,15 +72,22 @@ namespace BastionTech.Controllers
                 decimal totalReal = 0;
                 string? clienteUuid = string.IsNullOrEmpty(pedido.ClienteId) ? null : pedido.ClienteId;
 
+                // 🌟 ACTUALIZADO: Mapeamos las nuevas propiedades del DTO hacia la entidad de Supabase
                 var nuevaVenta = new Venta
                 {
                     UsuarioId = clienteUuid,
                     FechaTransaccion = DateTime.UtcNow,
                     Total = 0,
-                    Estado = "Completada"
+                    Estado = "Completada",
+                    Correo = pedido.Correo,
+                    Telefono = pedido.Telefono,
+                    Direccion = pedido.Direccion,
+                    MetodoPago = pedido.MetodoPago
                 };
 
                 var ventaRegistrada = await _supabaseService.RegistrarVentaAsync(nuevaVenta);
+
+                // ... El resto del bucle foreach(var item in pedido.Items) se mantiene exactamente igual sin cambios
 
                 foreach (var item in pedido.Items)
                 {
@@ -171,6 +178,23 @@ namespace BastionTech.Controllers
                 return View(ticket);
             }
         }
+        // ==========================================
+        // 🧾 6. RECIBO Y CONFIRMACIÓN DE COMPRA
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> Recibo(int id)
+        {
+            var venta = await _supabaseService.GetVentaByIdAsync(id);
+            if (venta == null) return NotFound("El recibo solicitado no existe.");
+
+            // Traemos los detalles de la compra (productos/servicios adquiridos)
+            var detalles = await _supabaseService.GetDetallesDeVentaAsync(id);
+
+            // Pasamos los detalles a través del ViewBag
+            ViewBag.Detalles = detalles;
+
+            return View(venta);
+        }
     } // <-- AQUÍ SE CIERRA LA CLASE TIENDACONTROLLER
 
     // ==========================================
@@ -186,6 +210,13 @@ namespace BastionTech.Controllers
     public class PedidoCheckoutDTO
     {
         public string ClienteId { get; set; } = string.Empty;
+
+        // NUEVOS CAMPOS AÑADIDOS
+        public string Correo { get; set; } = string.Empty;
+        public string Telefono { get; set; } = string.Empty;
+        public string Direccion { get; set; } = string.Empty;
+        public string MetodoPago { get; set; } = string.Empty;
+
         public List<ItemCarritoDTO> Items { get; set; } = new List<ItemCarritoDTO>();
         public decimal TotalCalculado { get; set; }
     }
