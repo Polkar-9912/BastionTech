@@ -2,12 +2,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 
-# Copiamos todo el código fuente al contenedor de un solo golpe
+# Copiamos absolutamente todo el repositorio al contenedor
 COPY . ./
 
-# Restauramos dependencias y compilamos
-RUN dotnet restore
-RUN dotnet publish -c Release -o out
+# 🌟 MAGIA AQUÍ: Buscamos el .csproj automáticamente en cualquier subcarpeta y lo publicamos.
+# (A partir de .NET 6+, el comando publish ya ejecuta un restore implícito, así que nos ahorramos un paso).
+RUN find . -name "*.csproj" -exec dotnet publish {} -c Release -o /app/out \;
 
 # 2. Etapa de ejecución
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
