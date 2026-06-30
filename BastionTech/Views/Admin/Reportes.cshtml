@@ -1,81 +1,242 @@
 ﻿@model BastionTech.Models.ReportesViewModel
 @{
-    ViewData["Title"] = "Panel de Reportes";
+    ViewData["Title"] = "Panel de Reportes (BI)";
 }
 
+<style>
+    @@media print {
+        /* Fuerza la eliminación de barras laterales, menús y pies de página del Layout global */
+        nav, sidebar, .sidebar, footer, .no-print, aside, #sidebar-menu {
+            display: none !important;
+        }
+        /* Ajusta los contenedores principales para usar el 100% del ancho de la hoja */
+        body, main, .container, div {
+            background: white !important;
+            color: #000000 !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        /* Evita que las tarjetas de KPIs o filas se corten a la mitad entre páginas */
+        .grid, table, tr, .bg-white {
+            page-break-inside: avoid !important;
+        }
+    }
+</style>
+
 <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-black text-slate-800">Panel Gerencial</h1>
-        <p class="text-slate-500">Resumen operativo y financiero de la plataforma</p>
+
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 border-b border-slate-100 pb-6 print:border-b-2 print:pb-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 print:text-2xl">Inteligencia de Negocios</h1>
+            <p class="text-slate-500 text-sm print:text-xs">Reporte operativo y financiero generado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto print:hidden">
+            <form method="get" asp-action="Reportes" class="flex flex-wrap items-end gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex-1 lg:flex-none">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Fecha Desde</label>
+                    <input type="date" name="fechaInicio" value="@Model.FechaInicio.ToString("yyyy-MM-dd")" class="px-3 py-1.5 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Fecha Hasta</label>
+                    <input type="date" name="fechaFin" value="@Model.FechaFin.ToString("yyyy-MM-dd")" class="px-3 py-1.5 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700" />
+                </div>
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center h-[38px]">
+                    <i class="fas fa-search mr-2"></i> Filtrar
+                </button>
+            </form>
+
+            <button onclick="window.print()" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center h-[38px] border border-blue-900">
+                <i class="fas fa-file-pdf mr-2"></i> Exportar a PDF
+            </button>
+        </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-6 rounded-2xl shadow-lg text-white">
-            <p class="text-blue-200 text-sm font-bold uppercase tracking-wider">Ingresos Totales</p>
-            <h2 class="text-4xl font-black mt-2">Bs. @Model.IngresosTotales.ToString("N2")</h2>
-            <p class="text-blue-300 text-xs mt-1">@Model.TotalOrdenes órdenes procesadas</p>
-        </div>
-        <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-lg text-white">
-            <p class="text-emerald-200 text-sm font-bold uppercase tracking-wider">Ticket Promedio</p>
-            <h2 class="text-4xl font-black mt-2">Bs. @Model.TicketPromedio.ToString("N2")</h2>
-            <p class="text-emerald-300 text-xs mt-1">Gasto medio por cliente</p>
-        </div>
-        <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-2xl shadow-lg text-white">
-            <p class="text-slate-300 text-sm font-bold uppercase tracking-wider">Soporte Operativo</p>
-            <h2 class="text-4xl font-black mt-2">@Model.TotalTickets</h2>
-            <p class="text-slate-400 text-xs mt-1">Incidentes totales registrados</p>
-        </div>
-    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 print:grid-cols-3 print:gap-4">
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="text-lg font-bold text-slate-800 mb-6">Estado de la Mesa de Ayuda</h3>
-            <div class="space-y-4">
-                @{
-                    var estados = new[] {
-                        new { Label = "Pendientes", Value = Model.TicketPendientes, Color = "bg-red-500" },
-                        new { Label = "En Proceso", Value = Model.TicketEnProceso, Color = "bg-blue-500" },
-                        new { Label = "Resueltos", Value = Model.TicketResueltos, Color = "bg-emerald-500" }
-                    };
-                }
-                @foreach (var e in estados)
-                {
-                    <div>
-                        <div class="flex justify-between text-sm font-bold mb-1">
-                            <span class="text-slate-600">@e.Label</span>
-                            <span class="text-slate-800">@e.Value</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-3">
-                            <div class="@e.Color h-3 rounded-full" style="width: @(Model.TotalTickets > 0 ? (e.Value * 100 / Model.TotalTickets) : 0)%"></div>
-                        </div>
-                    </div>
-                }
+        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
+            <p class="text-blue-200 text-sm font-bold uppercase tracking-wider print:text-slate-500">Ingresos del Periodo</p>
+            <h2 class="text-4xl font-black mt-2 print:text-2xl">Bs. @Model.IngresosPeriodo.ToString("N2")</h2>
+
+            <div class="mt-4 pt-3 border-t border-blue-600/50 flex justify-between text-xs items-center print:border-slate-200">
+                <span class="text-blue-200 font-medium print:text-slate-500"><i class="fas fa-globe mr-1"></i> Histórico Total:</span>
+                <span class="font-bold">Bs. @Model.IngresosTotales.ToString("N2")</span>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Top 5 Productos Rentables</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="text-slate-400 text-xs uppercase text-left">
-                            <th class="pb-3">Producto</th>
-                            <th class="pb-3 text-right">Ventas</th>
-                            <th class="pb-3 text-right">Recaudado</th>
+        <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
+            <p class="text-emerald-200 text-sm font-bold uppercase tracking-wider print:text-slate-500">Ventas del Periodo</p>
+            <h2 class="text-4xl font-black mt-2 print:text-2xl">@Model.VentasPeriodo.Count <span class="text-lg font-medium text-emerald-300 print:text-slate-500">órdenes</span></h2>
+
+            <div class="mt-4 pt-3 border-t border-emerald-600/50 flex justify-between text-xs items-center print:border-slate-200">
+                <span class="text-emerald-200 font-medium print:text-slate-500"><i class="fas fa-boxes mr-1"></i> Histórico Total:</span>
+                <span class="font-bold">@Model.TotalOrdenes órdenes</span>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
+            <p class="text-slate-300 text-sm font-bold uppercase tracking-wider print:text-slate-500">Mesa de Ayuda (Global)</p>
+            <h2 class="text-4xl font-black mt-2 print:text-2xl">@Model.TicketPendientes <span class="text-lg font-medium text-rose-400 print:text-red-600">pendientes</span></h2>
+
+            <div class="mt-4 pt-3 border-t border-slate-600/50 flex justify-between text-xs items-center print:border-slate-200">
+                <span class="text-slate-300 font-medium print:text-slate-500"><i class="fas fa-check-circle text-emerald-600 mr-1"></i> Tickets Resueltos:</span>
+                <span class="font-bold">@Model.TicketResueltos / @Model.TotalTickets</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 print:border-slate-300">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 print:text-sm">Evolución de Ingresos Diarios</h3>
+        <div class="w-full h-72">
+            <canvas id="graficoIngresos"></canvas>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 print:grid-cols-3 print:gap-4">
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col print:border-slate-300 print:col-span-2">
+            <div class="p-6 border-b border-slate-100 bg-slate-50 print:p-4">
+                <h3 class="text-lg font-bold text-slate-800 print:text-sm">Transacciones del Periodo Seleccionado</h3>
+                <p class="text-xs text-slate-500 mt-1">Registros del @Model.FechaInicio.ToString("dd/MM/yyyy") al @Model.FechaFin.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="max-h-96 overflow-y-auto print:max-h-full print:overflow-visible">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 shadow-sm z-10 print:static print:bg-slate-100 print:text-black">
+                        <tr>
+                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Orden</th>
+                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Fecha</th>
+                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Cliente / Correo</th>
+                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Método</th>
+                            <th class="px-6 py-4 font-bold text-right print:px-3 print:py-2">Monto (Bs)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach (var prod in Model.ProductosMasVendidos)
+                    <tbody class="divide-y divide-slate-100 print:divide-slate-200">
+                        @if (Model.VentasPeriodo.Any())
+                        {
+                            foreach (var venta in Model.VentasPeriodo)
+                            {
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 font-bold text-blue-800 print:px-3 print:py-2">#@venta.Id</td>
+                                    <td class="px-6 py-4 text-slate-600 print:px-3 print:py-2">@venta.FechaTransaccion.ToString("dd/MM HH:mm")</td>
+                                    <td class="px-6 py-4 text-slate-800 font-medium print:px-3 print:py-2">@(string.IsNullOrEmpty(venta.Correo) ? "Anónimo" : venta.Correo)</td>
+                                    <td class="px-6 py-4 print:px-3 print:py-2">
+                                        <span class="px-2 py-1 text-xs font-bold rounded-md bg-slate-100 text-slate-600 border border-slate-200 print:border-none print:p-0">
+                                            @(string.IsNullOrEmpty(venta.MetodoPago) ? "N/A" : venta.MetodoPago)
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 font-black text-slate-800 text-right print:px-3 print:py-2">@venta.Total.ToString("N2")</td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td class="py-3 font-bold text-slate-700">@prod.NombreProducto</td>
-                                <td class="py-3 text-right font-medium">@prod.CantidadVendida</td>
-                                <td class="py-3 text-right font-black text-blue-800">Bs. @prod.TotalRecaudado.ToString("N2")</td>
+                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 font-medium">
+                                    No hay transacciones registradas en este periodo.
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 print:border-slate-300 print:p-4 print:col-span-1">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 print:text-sm">Top 5 del Periodo</h3>
+
+            @if (Model.ProductosMasVendidos.Any())
+            {
+                <div class="space-y-4 mt-6 print:mt-3 print:space-y-3">
+                    @foreach (var prod in Model.ProductosMasVendidos)
+                    {
+                        var maxVentas = Model.ProductosMasVendidos.Max(p => p.CantidadVendida);
+                        var porcentaje = maxVentas > 0 ? (prod.CantidadVendida * 100 / maxVentas) : 0;
+
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="font-bold text-slate-700 truncate max-w-[140px] print:text-xs">@prod.NombreProducto</span>
+                                <span class="font-black text-blue-800 text-xs">Bs. @prod.TotalRecaudado.ToString("N0")</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-full bg-slate-100 rounded-full h-2 print:border print:border-slate-200">
+                                    <div class="bg-blue-500 h-2 rounded-full print:bg-blue-600" style="width: @porcentaje%"></div>
+                                </div>
+                                <span class="text-xs font-bold text-slate-500 whitespace-nowrap print:text-[10px]">@prod.CantidadVendida und.</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="p-8 text-center text-slate-400 text-sm">
+                    Aún no hay productos en rotación.
+                </div>
+            }
+        </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+    const datosBrutos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.VentasPeriodo
+                    .GroupBy(v => v.FechaTransaccion.ToString("dd/MM/yyyy"))
+                    .Select(g => new { Fecha = g.Key, Monto = g.Sum(x => x.Total) })
+                    .Reverse()
+            ));
+
+    const etiquetas = datosBrutos.map(d => d.Fecha);
+    const valores = datosBrutos.map(d => d.Monto);
+
+    if (etiquetas.length === 0) {
+    etiquetas.push("Sin datos");
+    valores.push(0);
+    }
+
+    const ctx = document.getElementById('graficoIngresos').getContext('2d');
+    new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: etiquetas,
+    datasets: [{
+    label: 'Ingresos Diarios (Bs.)',
+    data: valores,
+    borderColor: '#1e40af',
+    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderWidth: 3,
+    pointBackgroundColor: '#10b981',
+    pointBorderColor: '#ffffff',
+    pointBorderWidth: 2,
+    pointRadius: 4,
+    fill: true,
+    tension: 0.3
+    }]
+    },
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false, // Desactivar animaciones para que al imprimir capture la línea fija de inmediato
+    plugins: {
+    legend: { display: false }
+    },
+    scales: {
+    y: {
+    beginAtZero: true,
+    grid: { borderDash: [4, 4] },
+    ticks: {
+    callback: function(value) { return 'Bs. ' + value; }
+    }
+    },
+    x: { grid: { display: false } }
+    }
+    }
+    });
+    });
+</script>

@@ -38,35 +38,45 @@ namespace BastionTech.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Reportes()
+        public async Task<IActionResult> Reportes(DateTime? fechaInicio, DateTime? fechaFin)
         {
-            // 1. Inicializamos el ViewModel vacío
-            var viewModel = new Models.ReportesViewModel();
+            // 1. Inicialización de Fechas (Si llegan nulas, se asume "Hoy")
+            DateTime inicio = fechaInicio ?? DateTime.Today;
+            DateTime fin = fechaFin ?? DateTime.Today.AddDays(1).AddTicks(-1);
 
-            // 2. Extraemos los conjuntos de datos en crudo desde Supabase
-            var ventas = await _supabaseService.GetVentasTotalesAsync();
-            var tickets = await _supabaseService.GetTicketsAsync();
-
-            // 3. Procesamiento de Métricas Financieras Básicas
-            viewModel.TotalOrdenes = ventas?.Count ?? 0;
-            viewModel.IngresosTotales = ventas?.Sum(v => v.Total) ?? 0;
-
-            // 4. Procesamiento de Métricas Operativas (Resolución de Mesa de Ayuda)
-            if (tickets != null && tickets.Any())
+            var viewModel = new Models.ReportesViewModel
             {
-                viewModel.TicketPendientes = tickets.Count(t => t.EstadoTicket == "Pendiente");
-                viewModel.TicketEnProceso = tickets.Count(t => t.EstadoTicket == "En Proceso");
-                viewModel.TicketResueltos = tickets.Count(t => t.EstadoTicket == "Resuelto");
-            }
+                FechaInicio = inicio,
+                FechaFin = fin
+            };
 
-            // 5. Procesamiento del Ranking de Productos (El Core Analítico)
-            if (ventas != null && ventas.Any())
+            // 2. Extraemos los conjuntos de datos globales desde Supabase
+            var ventas = await _supabaseService.GetVentasTotalesAsync() ?? new List<Models.Venta>();
+            var tickets = await _supabaseService.GetTicketsAsync() ?? new List<Models.TicketServicio>();
+
+            // 3. Procesamiento Histórico (Fijo)
+            viewModel.TotalOrdenes = ventas.Count;
+            viewModel.IngresosTotales = ventas.Sum(v => v.Total);
+
+            // 4. Filtro LINQ de Ventas (El motor del Periodo)
+            viewModel.VentasPeriodo = ventas
+                .Where(v => v.FechaTransaccion >= inicio && v.FechaTransaccion <= fin)
+                .OrderByDescending(v => v.FechaTransaccion)
+                .ToList();
+
+            viewModel.IngresosPeriodo = viewModel.VentasPeriodo.Sum(v => v.Total);
+
+            // 5. Métricas de Tickets (Globales por defecto, como solicitaste)
+            viewModel.TicketPendientes = tickets.Count(t => t.EstadoTicket == "Pendiente");
+            viewModel.TicketEnProceso = tickets.Count(t => t.EstadoTicket == "En Proceso");
+            viewModel.TicketResueltos = tickets.Count(t => t.EstadoTicket == "Resuelto");
+
+            // 6. Procesamiento del Ranking de Productos (Aplicado SOLO a las ventas del periodo)
+            if (viewModel.VentasPeriodo.Any())
             {
                 var todosLosDetalles = new List<Models.VentaDetalle>();
 
-                // Recolectamos el detalle de todas las ventas (hardware y servicios)
-                // Nota arquitectónica: Para este MVP hacemos las consultas iterativas.
-                foreach (var venta in ventas)
+                foreach (var venta in viewModel.VentasPeriodo)
                 {
                     var detalles = await _supabaseService.GetDetallesDeVentaAsync(venta.Id);
                     if (detalles != null)
@@ -75,24 +85,22 @@ namespace BastionTech.Controllers
                     }
                 }
 
-                // 🌟 MAGIA LINQ: Agrupamos, sumamos, ordenamos y cortamos el Top 5
                 viewModel.ProductosMasVendidos = todosLosDetalles
-                    .Where(d => d.Producto != null) // Filtro de seguridad
-                    .GroupBy(d => d.ProductoId)     // Agrupamos por ID del producto
+                    .Where(d => d.Producto != null)
+                    .GroupBy(d => d.ProductoId)
                     .Select(grupo => new Models.ProductoRanking
                     {
                         ProductoId = grupo.Key,
-                        NombreProducto = grupo.First().Producto.Nombre, // Tomamos el nombre del primer elemento del grupo
-                        CantidadVendida = grupo.Sum(d => d.Cantidad),   // Sumatoria total de unidades desplazadas
-                        TotalRecaudado = grupo.Sum(d => d.Cantidad * d.PrecioUnitario), // Dinero total generado por este item
+                        NombreProducto = grupo.First().Producto.Nombre,
+                        CantidadVendida = grupo.Sum(d => d.Cantidad),
+                        TotalRecaudado = grupo.Sum(d => d.Cantidad * d.PrecioUnitario),
                         EsServicio = grupo.First().Producto.EsServicio
                     })
-                    .OrderByDescending(p => p.CantidadVendida) // El de mayor rotación primero
-                    .Take(5) // Limitamos estrictamente a los 5 mejores
+                    .OrderByDescending(p => p.CantidadVendida)
+                    .Take(5)
                     .ToList();
             }
 
-            // 6. Inyectamos el paquete procesado a la vista
             return View(viewModel);
         }
 
