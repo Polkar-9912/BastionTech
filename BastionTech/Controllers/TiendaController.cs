@@ -1,6 +1,8 @@
 using BastionTech.Models;
 using BastionTech.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BastionTech.Controllers
 {
@@ -194,6 +196,41 @@ namespace BastionTech.Controllers
             ViewBag.Detalles = detalles;
 
             return View(venta);
+        }
+        // ==========================================
+        // 💳 HISTORIAL FINANCIERO DEL CLIENTE
+        // ==========================================
+
+        [HttpGet]
+        [Authorize] // Restringe el acceso únicamente a usuarios que hayan iniciado sesión
+        public async Task<IActionResult> MisCompras()
+        {
+            // 1. Extraer de forma segura el correo electrónico del usuario autenticado en la sesión
+            var usuarioCorreo = User.FindFirst(ClaimTypes.Email)?.Value ?? User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(usuarioCorreo))
+            {
+                // Mecanismo de defensa por si la sesión expira o es inválida
+                return RedirectToAction("Index", "Tienda");
+            }
+
+            // 2. Consultar el repositorio global de ventas en Supabase
+            var todasLasVentas = await _supabaseService.GetVentasTotalesAsync() ?? new List<Models.Venta>();
+
+            // 3. MOTOR LINQ: Filtramos las ventas que pertenezcan al usuario y ordenamos de la más reciente a la más antigua
+            var comprasFiltradas = todasLasVentas
+                .Where(v => v.Correo != null && v.Correo.Equals(usuarioCorreo, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(v => v.FechaTransaccion)
+                .ToList();
+
+            // 4. Empaquetamos los datos procesados en el ViewModel
+            var viewModel = new Models.MisComprasViewModel
+            {
+                Compras = comprasFiltradas
+            };
+
+            // 5. Enviamos el modelo a la vista (Views/Tienda/MisCompras.cshtml)
+            return View(viewModel);
         }
     } // <-- AQUÍ SE CIERRA LA CLASE TIENDACONTROLLER
 

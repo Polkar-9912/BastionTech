@@ -29,6 +29,9 @@
                         <a asp-controller="Tienda" asp-action="AbrirTicket" class="text-sm font-bold text-slate-600 hover:text-blue-800 transition-colors">
                             <i class="fas fa-headset mr-1"></i> Soporte
                         </a>
+                        <a asp-controller="Tienda" asp-action="MisCompras" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-colors font-medium">
+                            <i class="fas fa-file-invoice-dollar mr-2 w-4 text-center text-slate-400"></i> Mis Compras
+                        </a>
                     }
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
