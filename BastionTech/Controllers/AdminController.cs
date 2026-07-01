@@ -126,9 +126,23 @@ namespace BastionTech.Controllers
         // ==========================================
         // REGLA CRÍTICA: Bloqueo estricto a nivel de método. El técnico recibirá un 403 Forbidden aquí.
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Inventario()
+        public async Task<IActionResult> Inventario(string? terminoBusqueda)
         {
-            var productos = await _supabaseService.GetProductosAsync();
+            var productos = await _supabaseService.GetProductosAsync() ?? new List<Models.Producto>();
+
+            // Aplicamos el motor de búsqueda si el administrador escribió o dictó algo
+            if (!string.IsNullOrWhiteSpace(terminoBusqueda))
+            {
+                var busqueda = terminoBusqueda.ToLower().Trim();
+
+                productos = productos
+                    .Where(p => p.Nombre != null && p.Nombre.ToLower().Contains(busqueda))
+                    .ToList();
+            }
+
+            // Guardamos el término en el ViewBag para mantenerlo visible en el input después de recargar
+            ViewBag.TerminoActual = terminoBusqueda;
+
             return View(productos);
         }
         // ==========================================
@@ -190,10 +204,6 @@ namespace BastionTech.Controllers
             return RedirectToAction("Inventario");
         }
 
-       
-        // ==========================================
-        // 🛠️ 5. CONSOLA DE SOPORTE TÉCNICO
-        // ==========================================
 
         // ==========================================
         // 🛠️ 5. BANDEJA DE TICKETS SEGMENTADA

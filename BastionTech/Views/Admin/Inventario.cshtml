@@ -2,14 +2,15 @@
 @{
     ViewData["Title"] = "Gestión de Inventario";
 }
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center mb-6">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-800">Catálogo de Productos</h1>
             <p class="text-sm text-slate-500 mt-1">Gestión centralizada de hardware y servicios IT</p>
         </div>
-        <a asp-action="CrearProducto" class="bg-blue-800 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center">
+        <a asp-action="CrearProducto" class="bg-blue-800 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center w-full sm:w-auto justify-center">
             <i class="fas fa-plus mr-2"></i> Nuevo Artículo
         </a>
     </div>
@@ -21,6 +22,36 @@
             <p class="font-medium">@TempData["MensajeExito"]</p>
         </div>
     }
+
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6">
+        <form method="get" asp-action="Inventario" id="form-busqueda" class="flex items-center gap-3 w-full max-w-xl">
+            <div class="relative flex-1">
+                <i class="fas fa-search text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input type="text"
+                       name="terminoBusqueda"
+                       id="input-busqueda"
+                       value="@ViewBag.TerminoActual"
+                       placeholder="Buscar por nombre de producto..."
+                       class="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white font-medium text-slate-700 transition-all" />
+            </div>
+
+            <button type="button"
+                    id="btn-voz"
+                    title="Buscar por voz"
+                    class="w-[42px] h-[42px] bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-700 border border-slate-200 hover:border-blue-200 rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm relative group">
+                <i class="fas fa-microphone text-base" id="icono-microfono"></i>
+
+                <span id="pulso-grabando" class="absolute inset-0 rounded-xl bg-rose-500/20 animate-ping hidden"></span>
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(ViewBag.TerminoActual))
+            {
+                <a asp-action="Inventario" class="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors whitespace-nowrap px-2">
+                    Limpiar filtro
+                </a>
+            }
+        </form>
+    </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto">
@@ -36,49 +67,61 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">
-                    @foreach (var item in Model)
+                    @if (Model.Any())
                     {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 text-slate-400 font-medium whitespace-nowrap">#@item.Id</td>
-                            <td class="p-4 font-bold text-slate-800">@item.Nombre</td>
-                            <td class="p-4 text-center">
-                                @if (item.EsServicio)
-                                {
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
-                                        Servicio IT
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-                                        Hardware
-                                    </span>
-                                }
-                            </td>
-                            <td class="p-4 text-right font-black text-slate-700 whitespace-nowrap">$@item.Precio.ToString("0.00")</td>
-                            <td class="p-4 text-center">
-                                @if (item.EsServicio)
-                                {
-                                    <span class="text-slate-300">-</span>
-                                }
-                                else
-                                {
-                                    <span class="font-bold px-3 py-1 rounded-full text-xs
-                                        @(item.Stock > 10 ? "bg-emerald-100 text-emerald-700" :
-                                            item.Stock > 0 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700")">
-                                        @item.Stock unid.
-                                    </span>
-                                }
-                            </td>
-                            <td class="p-4 text-center space-x-4 whitespace-nowrap">
-                                <a asp-action="EditarProducto" asp-route-id="@item.Id" class="text-blue-500 hover:text-blue-700 transition-colors inline-block" title="Editar">
-                                    <i class="fas fa-edit text-lg"></i>
-                                </a>
-                                <form asp-action="EliminarProducto" asp-route-id="@item.Id" method="post" class="inline-block" onsubmit="return confirm('ATENCIÓN: ¿Estás completamente seguro de borrar este artículo? Esto podría afectar el historial de ventas.');">
-                                    <button type="submit" class="text-rose-400 hover:text-rose-600 transition-colors" title="Eliminar">
-                                        <i class="fas fa-trash-alt text-lg"></i>
-                                    </button>
-                                </form>
+                        foreach (var item in Model)
+                        {
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-4 text-slate-400 font-medium whitespace-nowrap">#@item.Id</td>
+                                <td class="p-4 font-bold text-slate-800">@item.Nombre</td>
+                                <td class="p-4 text-center">
+                                    @if (item.EsServicio)
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                            Servicio IT
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                                            Hardware
+                                        </span>
+                                    }
+                                </td>
+                                <td class="p-4 text-right font-black text-slate-700 whitespace-nowrap">Bs. @item.Precio.ToString("N2")</td>
+                                <td class="p-4 text-center">
+                                    @if (item.EsServicio)
+                                    {
+                                        <span class="text-slate-300">-</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="font-bold px-3 py-1 rounded-full text-xs
+                                            @(item.Stock > 10 ? "bg-emerald-100 text-emerald-700" :
+                                                  item.Stock > 0 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700")">
+                                            @item.Stock unid.
+                                        </span>
+                                    }
+                                </td>
+                                <td class="p-4 text-center space-x-4 whitespace-nowrap">
+                                    <a asp-action="EditarProducto" asp-route-id="@item.Id" class="text-blue-500 hover:text-blue-700 transition-colors inline-block" title="Editar">
+                                        <i class="fas fa-edit text-lg"></i>
+                                    </a>
+                                    <form asp-action="EliminarProducto" asp-route-id="@item.Id" method="post" class="inline-block" onsubmit="return confirm('ATENCIÓN: ¿Estás completamente seguro de borrar este artículo? Esto podría afectar el historial de ventas.');">
+                                        <button type="submit" class="text-rose-400 hover:text-rose-600 transition-colors" title="Eliminar">
+                                            <i class="fas fa-trash-alt text-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="p-12 text-center text-slate-500 font-medium bg-slate-50/50">
+                                <i class="fas fa-search-minus text-3xl text-slate-300 mb-3 block"></i>
+                                No se encontraron productos que coincidan con la búsqueda.
                             </td>
                         </tr>
                     }
@@ -87,3 +130,101 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Instanciación del objeto con soporte multiplataforma (Paso 3.1)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // Verificación de compatibilidad del navegador
+        if (!SpeechRecognition) {
+            console.warn("La Web Speech API no es compatible con este navegador. El botón de voz se deshabilitará.");
+            const btnVoz = document.getElementById('btn-voz');
+            if (btnVoz) btnVoz.style.display = 'none';
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+
+        // Configuración del motor de reconocimiento
+        recognition.lang = 'es-BO'; // Configurado para español de Bolivia
+        recognition.continuous = false; // Se detiene automáticamente cuando el usuario deja de hablar
+        recognition.interimResults = false; // Solo nos interesa el resultado final procesado
+
+        // Elementos del DOM a manipular
+        const btnVoz = document.getElementById('btn-voz');
+        const iconoMicrofono = document.getElementById('icono-microfono');
+        const pulsoGrabando = document.getElementById('pulso-grabando');
+        const inputBusqueda = document.getElementById('input-busqueda');
+        const formBusqueda = document.getElementById('form-busqueda');
+
+        let escuchando = false;
+
+        // 2. Controladores de Eventos del Micrófono (Paso 3.2)
+        btnVoz.addEventListener('click', function () {
+            if (!escuchando) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error("Error al iniciar el reconocimiento: ", e);
+                }
+            } else {
+                recognition.stop();
+            }
+        });
+
+        // Evento: El navegador empieza a escuchar activamente
+        recognition.onstart = function () {
+            escuchando = true;
+
+            // FEEDBACK VISUAL: Cambiamos estilos a modo "Grabando" (Color rojo carmín)
+            btnVoz.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-blue-50', 'hover:text-blue-700', 'border-slate-200');
+            btnVoz.classList.add('bg-rose-500', 'text-white', 'border-rose-600', 'hover:bg-rose-600');
+            iconoMicrofono.classList.remove('fa-microphone');
+            iconoMicrofono.classList.add('fa-microphone-alt');
+
+            // Encendemos la animación de pulso de Tailwind
+            pulsoGrabando.classList.remove('hidden');
+
+            // Cambiamos provisionalmente el placeholder para guiar al administrador
+            inputBusqueda.placeholder = "Escuchando... hable ahora.";
+        };
+
+        // Evento: La grabación finaliza (ya sea por silencio o detención manual)
+        recognition.onend = function () {
+            escuchando = false;
+
+            // Restablecemos los estilos originales del botón
+            btnVoz.classList.remove('bg-rose-500', 'text-white', 'border-rose-600', 'hover:bg-rose-600');
+            btnVoz.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-blue-50', 'hover:text-blue-700', 'border-slate-200');
+            iconoMicrofono.classList.remove('fa-microphone-alt');
+            iconoMicrofono.classList.add('fa-microphone');
+
+            // Apagamos la animación de pulso
+            pulsoGrabando.classList.add('hidden');
+            inputBusqueda.placeholder = "Buscar por nombre de producto...";
+        };
+
+        // 3. Captura del Resultado y Envío Automático (Paso 3.3)
+        recognition.onresult = function (event) {
+            // Extraemos la transcripción textual del índice cero
+            const textoDictado = event.results[0][0].transcript;
+
+            // Limpiamos el texto (eliminamos puntos automáticos que pone el dictado de Google)
+            const textoLimpio = textoDictado.replace(/\./g, '').trim();
+
+            // Inyectamos el texto en el input de búsqueda
+            inputBusqueda.value = textoLimpio;
+
+            // Envío inmediato del formulario (Gatilla el filtro LINQ del AdminController)
+            formBusqueda.submit();
+        };
+
+        // Manejo de Errores Críticos (Silencio, bloqueo de privacidad, etc.)
+        recognition.onerror = function (event) {
+            console.error("Error en Web Speech API: " + event.error);
+            if (event.error === 'not-allowed') {
+                alert("Permiso denegado: Por favor habilite el acceso al micrófono en la barra de direcciones de su navegador.");
+            }
+        };
+    });
+</script>
