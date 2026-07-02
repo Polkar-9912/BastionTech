@@ -19,9 +19,21 @@ namespace BastionTech.Controllers
         // ==========================================
         // 🛍️ 1. CATÁLOGO PRINCIPAL
         // ==========================================
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string categoria = null)
         {
+            // 1. Obtenemos el catálogo completo desde tu servicio de Supabase
             var catalogo = await _supabaseService.GetProductosAsync();
+
+            // 2. Si el parámetro 'categoria' trae texto, filtramos la lista en memoria usando LINQ
+            if (!string.IsNullOrEmpty(categoria))
+            {
+                catalogo = catalogo.Where(p => p.Categoria == categoria).ToList();
+
+                // Almacenamos la categoría en el ViewBag para consumirla en la UI (Fase 3)
+                ViewBag.CategoriaActual = categoria;
+            }
+
+            // 3. Enviamos la lista (filtrada o completa) a la vista
             return View(catalogo);
         }
 

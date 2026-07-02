@@ -3,98 +3,137 @@
     ViewData["Title"] = "Panel de Control";
 }
 
-<div class="min-h-screen bg-slate-50 flex">
+<div class="min-h-screen bg-slate-50 flex -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
 
-    <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex rounded-br-2xl shadow-xl">
-        <div class="p-6 border-b border-slate-800">
-            <h2 class="text-xl font-black text-emerald-400 tracking-tight">Centro de Mando</h2>
-            <p class="text-xs text-slate-400 mt-1">Rol: @(User.IsInRole("Admin") ? "Administrador" : "Soporte Técnico")</p>
+    <!-- ========================================== -->
+    <!-- SIDEBAR (Menú Lateral Oscuro)              -->
+    <!-- ========================================== -->
+    <aside class="w-72 bg-slate-900 text-white flex-col hidden md:flex rounded-br-3xl shadow-2xl relative z-10">
+        <div class="p-8 border-b border-slate-800">
+            <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <i class="fas fa-shield-halved text-blue-500"></i> Bastion<span class="text-blue-500">Tech</span>
+            </h2>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Centro de Operaciones IT</p>
+            <div class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-medium text-emerald-400">
+                <i class="fas fa-circle text-[8px] mr-2 animate-pulse"></i> @(User.IsInRole("Admin") ? "Rol: Administrador" : "Rol: Soporte Técnico")
+            </div>
         </div>
 
-        <nav class="flex-grow p-4 space-y-2">
-            <a asp-controller="Admin" asp-action="Dashboard" class="block w-full text-left px-4 py-3 bg-blue-800 rounded-lg text-sm font-medium text-white transition-colors">
-                <i class="fas fa-chart-line w-6"></i> Resumen
+        <nav class="flex-grow p-4 space-y-1.5 mt-2">
+            <a asp-controller="Admin" asp-action="Dashboard" class="block w-full text-left px-4 py-3.5 bg-blue-600 rounded-xl text-sm font-bold text-white shadow-lg shadow-blue-900/50 transition-all flex items-center">
+                <i class="fas fa-chart-line w-6 text-blue-200"></i> Resumen Operativo
             </a>
 
             @if (User.IsInRole("Admin"))
             {
-                <a asp-controller="Admin" asp-action="Inventario" class="block w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors">
-                    <i class="fas fa-box w-6"></i> Inventario
+                <a asp-controller="Admin" asp-action="Inventario" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                    <i class="fas fa-server w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Inventario de Hardware
                 </a>
-                <a asp-controller="Admin" asp-action="Reportes" class="block w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors">
-                    <i class="fas fa-box w-6"></i> Reportes
+                <a asp-controller="Admin" asp-action="Reportes" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                    <i class="fas fa-file-contract w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Reportes Financieros
                 </a>
             }
 
-            <a asp-controller="Admin" asp-action="Tickets" class="block w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors">
-                <i class="fas fa-box w-6"></i> Mis Tickets
+            <a asp-controller="Admin" asp-action="Tickets" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                <i class="fas fa-headset w-6 text-slate-500 group-hover:text-purple-400 transition-colors"></i> Mesa de Ayuda (Tickets)
             </a>
         </nav>
+
+        <div class="p-6 border-t border-slate-800">
+            <a asp-controller="Tienda" asp-action="Index" class="flex items-center text-xs text-slate-400 hover:text-white transition-colors font-medium">
+                <i class="fas fa-external-link-alt mr-2"></i> Ver Tienda Pública
+            </a>
+        </div>
     </aside>
 
-    <main class="flex-1 p-8">
-        <div class="flex justify-between items-center mb-8">
+    <!-- ========================================== -->
+    <!-- CONTENIDO PRINCIPAL                        -->
+    <!-- ========================================== -->
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+
+        <!-- Cabecera del Main -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
             <div>
-                <h1 class="text-3xl font-black text-slate-800">Resumen Operativo</h1>
-                <p class="text-sm text-slate-500 mt-1">Bienvenido al sistema, @User.Identity.Name</p>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Dashboard General</h1>
+                <p class="text-sm text-slate-500 mt-1 font-medium">Bienvenido de nuevo, <span class="text-blue-700 font-bold">@User.Identity.Name</span></p>
             </div>
-            <span class="px-4 py-2 bg-white rounded-full shadow-sm text-sm font-bold text-slate-500 h-fit">
-                <i class="fas fa-calendar-day mr-2 text-blue-600"></i> @DateTime.Now.ToString("dd MMMM, yyyy")
-            </span>
+            <div class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-600 flex items-center gap-3">
+                <i class="fas fa-calendar-day text-blue-600"></i>
+                @DateTime.Now.ToString("dd MMMM, yyyy")
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Tarjetas de Métricas (KPIs) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             @if (User.IsInRole("Admin"))
             {
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
-                    <div class="p-4 bg-emerald-100 text-emerald-600 rounded-xl mr-4"><i class="fas fa-dollar-sign text-2xl"></i></div>
-                    <div><p class="text-sm text-slate-500 font-medium">Ingresos Totales</p><h3 class="text-2xl font-black text-slate-800">$@ViewBag.TotalIngresos.ToString("0.00")</h3></div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center relative overflow-hidden group hover:border-emerald-300 transition-colors">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform"></div>
+                    <div class="p-4 bg-emerald-100 text-emerald-600 rounded-2xl mr-5 relative z-10"><i class="fas fa-wallet text-2xl w-6 text-center"></i></div>
+                    <div class="relative z-10">
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Ingresos Brutos</p>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Bs. @ViewBag.TotalIngresos.ToString("N2")</h3>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center">
-                    <div class="p-4 bg-blue-100 text-blue-600 rounded-xl mr-4"><i class="fas fa-shopping-cart text-2xl"></i></div>
-                    <div><p class="text-sm text-slate-500 font-medium">Ventas Realizadas</p><h3 class="text-2xl font-black text-slate-800">@ViewBag.TotalVentas</h3></div>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center relative overflow-hidden group hover:border-blue-300 transition-colors">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform"></div>
+                    <div class="p-4 bg-blue-100 text-blue-600 rounded-2xl mr-5 relative z-10"><i class="fas fa-shopping-cart text-2xl w-6 text-center"></i></div>
+                    <div class="relative z-10">
+                        <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Ventas Realizadas</p>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">@ViewBag.TotalVentas</h3>
+                    </div>
                 </div>
             }
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center @(User.IsInRole("Tecnico") ? "md:col-span-3" : "")">
-                <div class="p-4 bg-rose-100 text-rose-600 rounded-xl mr-4"><i class="fas fa-wrench text-2xl"></i></div>
-                <div><p class="text-sm text-slate-500 font-medium">Tickets Abiertos</p><h3 class="text-2xl font-black text-slate-800">@ViewBag.TicketsAbiertos</h3></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center relative overflow-hidden group hover:border-rose-300 transition-colors @(User.IsInRole("Tecnico") ? "md:col-span-3 max-w-sm" : "")">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
+                <div class="p-4 bg-rose-100 text-rose-600 rounded-2xl mr-5 relative z-10"><i class="fas fa-ticket-alt text-2xl w-6 text-center"></i></div>
+                <div class="relative z-10">
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Tickets de Soporte</p>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">@ViewBag.TicketsAbiertos Activos</h3>
+                </div>
             </div>
         </div>
 
+        <!-- Tabla de Últimas Transacciones -->
         @if (User.IsInRole("Admin") && Model != null && Model.Any())
         {
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <h2 class="text-lg font-black text-slate-800">Últimas Transacciones</h2>
-                    <span class="text-sm text-slate-500">Mostrando las 10 más recientes</span>
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-history text-slate-400"></i> Últimas Transacciones
+                    </h2>
+                    <span class="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">Mostrando las 10 más recientes</span>
                 </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
-                                <th class="p-4 font-bold">Nº Venta</th>
-                                <th class="p-4 font-bold">Fecha</th>
-                                <th class="p-4 font-bold text-center">Estado</th>
-                                <th class="p-4 font-bold text-right">Total Facturado</th>
-                                <th class="p-4 font-bold text-center">Acciones</th>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[11px] uppercase tracking-wider font-black">
+                                <th class="p-5">Nº Venta</th>
+                                <th class="p-5">Fecha y Hora</th>
+                                <th class="p-5 text-center">Estado</th>
+                                <th class="p-5 text-right">Total Facturado</th>
+                                <th class="p-5 text-center">Auditoría</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-sm">
                             @foreach (var venta in Model)
                             {
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="p-4 font-bold text-slate-800">#@venta.Id</td>
-                                    <td class="p-4 text-slate-600">@venta.FechaTransaccion.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td class="p-4 text-center">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                                            @venta.Estado
+                                <tr class="hover:bg-blue-50/50 transition-colors group">
+                                    <td class="p-5 font-black text-blue-800">#@venta.Id</td>
+                                    <td class="p-5 text-slate-600 font-medium">@venta.FechaTransaccion.ToString("dd/MM/yyyy - HH:mm")</td>
+                                    <td class="p-5 text-center">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            <i class="fas fa-check-circle mr-1.5"></i> @venta.Estado
                                         </span>
                                     </td>
-                                    <td class="p-4 text-right font-black text-slate-700">$@venta.Total.ToString("0.00")</td>
-                                    <td class="p-4 text-center">
-                                        <a asp-action="DetalleVenta" asp-route-id="@venta.Id" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">Ver Detalles</a>
+                                    <td class="p-5 text-right font-black text-slate-800 text-base">Bs. @venta.Total.ToString("N2")</td>
+                                    <td class="p-5 text-center">
+                                        <a asp-action="DetalleVenta" asp-route-id="@venta.Id" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 shadow-sm transition-all">
+                                            <i class="fas fa-search mr-2"></i> Inspeccionar
+                                        </a>
                                     </td>
                                 </tr>
                             }

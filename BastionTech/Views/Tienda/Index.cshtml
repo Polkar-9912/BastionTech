@@ -1,45 +1,213 @@
 ﻿@model IEnumerable<BastionTech.Models.Producto>
 
 @{
-    ViewData["Title"] = "Catálogo";
+    ViewData["Title"] = "Inicio";
+
+    // Evaluamos si el usuario está navegando en una categoría específica
+    bool esBusquedaFiltrada = !string.IsNullOrEmpty(ViewBag.CategoriaActual);
+
+    // Separamos la lista usando LINQ solo si NO es una búsqueda filtrada
+    var destacados = esBusquedaFiltrada ? new List<BastionTech.Models.Producto>() : Model.Take(4).ToList();
+    var catalogo = esBusquedaFiltrada ? Model.ToList() : Model.Skip(4).ToList();
 }
 
-<div class="bg-blue-800 text-white py-12 px-8 rounded-2xl mb-10 shadow-lg">
-    <h1 class="text-4xl font-extrabold mb-3">Soluciones IT & Hardware</h1>
-    <p class="text-lg text-blue-200 max-w-2xl">Equipos de alto rendimiento y servicios profesionales para tu infraestructura.</p>
+@if (esBusquedaFiltrada)
+{
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">Filtro Activo</span>
+            <h1 class="text-3xl font-black text-slate-900 mt-2 tracking-tight">
+                Categoría: <span class="text-blue-800">@ViewBag.CategoriaActual</span>
+            </h1>
+            <p class="text-sm text-slate-500 mt-1 font-medium">Se han encontrado <span class="font-bold text-slate-700">@Model.Count()</span> productos/servicios disponibles.</p>
+        </div>
+
+        <a href="/Tienda/Index" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors flex items-center shadow-sm flex-shrink-0">
+            <i class="fas fa-times mr-2 text-slate-400"></i> Limpiar Filtro
+        </a>
+    </div>
+}
+else
+{
+    <div class="relative bg-slate-900 rounded-2xl overflow-hidden mb-12 shadow-xl border border-slate-800">
+    </div>
+}
+
+@if (!esBusquedaFiltrada)
+{
+}
+
+<!-- ========================================== -->
+<!-- 1. HERO BANNER PRINCIPAL                   -->
+<!-- ========================================== -->
+<div class="relative bg-slate-900 rounded-2xl overflow-hidden mb-12 shadow-xl border border-slate-800">
+    <div class="absolute inset-0">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-30 mix-blend-luminosity"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/95 to-slate-900/80"></div>
+    </div>
+
+    <div class="relative py-16 px-8 sm:px-12 lg:px-16 flex flex-col justify-center min-h-[340px]">
+        <span class="text-blue-400 font-bold tracking-wider uppercase text-sm mb-3 flex items-center">
+            <i class="fas fa-shield-check mr-2"></i> Especialistas en Infraestructura
+        </span>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
+            Potencia tu entorno <br />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">con tecnología de punta.</span>
+        </h1>
+        <p class="text-lg text-slate-300 max-w-xl mb-8 font-medium">
+            Desde componentes de alto rendimiento hasta auditorías de ciberseguridad corporativa. Todo lo que tu empresa necesita para escalar con seguridad.
+        </p>
+        <div>
+            <a href="#seccion-catalogo" class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-blue-600/30 transition-all transform hover:-translate-y-0.5">
+                Ver Catálogo <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    @foreach (var item in Model)
-    {
-        <div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden flex flex-col transition-transform hover:-translate-y-1 hover:shadow-md">
-            <div class="relative h-48 w-full bg-slate-100 p-4 flex items-center justify-center">
-                @if (!string.IsNullOrEmpty(item.UrlImagen))
-                {
-                    <img src="@item.UrlImagen" alt="@item.Nombre" class="max-h-full object-contain mix-blend-multiply" />
-                }
-                <div class="absolute top-3 right-3">
-                    <span class="bg-slate-800 text-white text-xs font-bold px-3 py-1 rounded-full">
-                        @(item.EsServicio ? "Servicio IT" : "Hardware")
-                    </span>
-                </div>
+<!-- ========================================== -->
+<!-- 2. SECCIÓN: LO MÁS VENDIDO                 -->
+<!-- ========================================== -->
+@if (destacados.Any())
+{
+    <div class="mb-14">
+        <div class="flex items-center gap-3 mb-6 border-b border-slate-200 pb-3">
+            <div class="bg-rose-100 text-rose-600 p-2 rounded-lg">
+                <i class="fas fa-fire-alt text-xl"></i>
             </div>
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Lo Más Vendido</h2>
+        </div>
 
-            <div class="p-5 flex-1 flex flex-col">
-                <h2 class="text-lg font-bold text-slate-900 leading-tight mb-2">@item.Nombre</h2>
-                <p class="text-slate-500 text-sm mb-5 flex-1 line-clamp-2">@item.DescripcionCorta</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var item in destacados)
+            {
+                <!-- TARJETA DE PRODUCTO -->
+                <div class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 flex flex-col group relative overflow-hidden">
 
-                <div class="flex justify-between items-end mt-auto pt-4 border-t border-slate-100">
-                    <div>
-                        <span class="block text-xs text-slate-400 font-medium mb-1">Precio</span>
-                        <span class="text-2xl font-black text-blue-800">$@item.Precio.ToString("N0")</span>
+                    <div class="absolute top-3 left-3 z-10">
+                        @if (item.EsServicio)
+                        {
+                            <span class="bg-purple-100 text-purple-800 border border-purple-200 text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase shadow-sm">Servicio IT</span>
+                        }
+                        else
+                        {
+                            <span class="bg-blue-100 text-blue-800 border border-blue-200 text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase shadow-sm">Hardware</span>
+                        }
                     </div>
 
-                    <a asp-action="Detalle" asp-route-id="@item.Id" class="bg-slate-100 hover:bg-blue-800 hover:text-white text-blue-900 font-semibold rounded-lg px-4 py-2 transition-colors">
-                        Ver más
-                    </a>
+                    <div class="p-6 h-52 flex items-center justify-center relative bg-white group-hover:scale-105 transition-transform duration-500">
+                        @if (!string.IsNullOrEmpty(item.UrlImagen))
+                        {
+                            <img src="@item.UrlImagen" alt="@item.Nombre" class="max-h-full object-contain mix-blend-multiply" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-image text-slate-200 text-5xl"></i>
+                        }
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col border-t border-slate-100 bg-slate-50/50">
+                        <p class="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">BastionTech</p>
+                        <h3 class="text-sm text-slate-800 font-bold line-clamp-2 mb-4 group-hover:text-blue-700 transition-colors leading-tight min-h-[40px]">@item.Nombre</h3>
+
+                        <div class="mt-auto">
+                            <span class="text-2xl font-black text-slate-900 tracking-tight">Bs. @item.Precio.ToString("N2")</span>
+
+                            @if (!item.EsServicio)
+                            {
+                                <p class="text-emerald-600 text-[11px] font-bold mt-1.5 flex items-center">
+                                    <i class="fas fa-truck mr-1.5"></i> Envío rápido disponible
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-blue-600 text-[11px] font-bold mt-1.5 flex items-center">
+                                    <i class="fas fa-headset mr-1.5"></i> Atención prioritaria
+                                </p>
+                            }
+                        </div>
+
+                        <a href="/Tienda/Detalle/@item.Id" class="w-full mt-5 bg-white hover:bg-blue-800 text-slate-700 hover:text-white border border-slate-200 hover:border-transparent font-bold text-sm py-2.5 rounded-xl text-center transition-all shadow-sm flex items-center justify-center gap-2">
+                            Ver Detalles <i class="fas fa-chevron-right text-xs opacity-70"></i>
+                        </a>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
-    }
-</div>
+    </div>
+}
+
+<!-- ========================================== -->
+<!-- 3. SECCIÓN: CATÁLOGO COMPLETO              -->
+<!-- ========================================== -->
+@if (catalogo.Any())
+{
+    <div id="seccion-catalogo">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-100 text-blue-800 p-2 rounded-lg">
+                    <i class="fas fa-box-open text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">Descubre más artículos</h2>
+            </div>
+            <span class="text-sm font-bold text-slate-400">@catalogo.Count productos</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            @foreach (var item in catalogo)
+            {
+                <!-- TARJETA DE PRODUCTO -->
+                <div class="bg-white rounded-2xl border border-slate-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 flex flex-col group relative overflow-hidden">
+
+                    <div class="absolute top-3 left-3 z-10">
+                        @if (item.EsServicio)
+                        {
+                            <span class="bg-purple-100 text-purple-800 border border-purple-200 text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase shadow-sm">Servicio IT</span>
+                        }
+                        else
+                        {
+                            <span class="bg-blue-100 text-blue-800 border border-blue-200 text-[10px] font-black px-2.5 py-1 rounded-md tracking-wide uppercase shadow-sm">Hardware</span>
+                        }
+                    </div>
+
+                    <div class="p-6 h-52 flex items-center justify-center relative bg-white group-hover:scale-105 transition-transform duration-500">
+                        @if (!string.IsNullOrEmpty(item.UrlImagen))
+                        {
+                            <img src="@item.UrlImagen" alt="@item.Nombre" class="max-h-full object-contain mix-blend-multiply" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-image text-slate-200 text-5xl"></i>
+                        }
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col border-t border-slate-100 bg-slate-50/50">
+                        <p class="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">BastionTech</p>
+                        <h3 class="text-sm text-slate-800 font-bold line-clamp-2 mb-4 group-hover:text-blue-700 transition-colors leading-tight min-h-[40px]">@item.Nombre</h3>
+
+                        <div class="mt-auto">
+                            <span class="text-2xl font-black text-slate-900 tracking-tight">Bs. @item.Precio.ToString("N2")</span>
+
+                            @if (!item.EsServicio)
+                            {
+                                <p class="text-emerald-600 text-[11px] font-bold mt-1.5 flex items-center">
+                                    <i class="fas fa-truck mr-1.5"></i> Envío rápido disponible
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-blue-600 text-[11px] font-bold mt-1.5 flex items-center">
+                                    <i class="fas fa-headset mr-1.5"></i> Atención prioritaria
+                                </p>
+                            }
+                        </div>
+
+                        <a href="/Tienda/Detalle/@item.Id" class="w-full mt-5 bg-white hover:bg-blue-800 text-slate-700 hover:text-white border border-slate-200 hover:border-transparent font-bold text-sm py-2.5 rounded-xl text-center transition-all shadow-sm flex items-center justify-center gap-2">
+                            Ver Detalles <i class="fas fa-chevron-right text-xs opacity-70"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

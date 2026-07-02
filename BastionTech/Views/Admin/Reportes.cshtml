@@ -5,8 +5,8 @@
 
 <style>
     @@media print {
-        /* Fuerza la eliminación de barras laterales, menús y pies de página del Layout global */
-        nav, sidebar, .sidebar, footer, .no-print, aside, #sidebar-menu {
+        /* Fuerza la eliminación de barras laterales, menús y pies de página */
+        nav, sidebar, .sidebar, footer, .no-print, aside, #sidebar-menu, header {
             display: none !important;
         }
         /* Ajusta los contenedores principales para usar el 100% del ancho de la hoja */
@@ -26,159 +26,212 @@
     }
 </style>
 
-<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-slate-50 flex -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
 
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4 border-b border-slate-100 pb-6 print:border-b-2 print:pb-4">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800 print:text-2xl">Inteligencia de Negocios</h1>
-            <p class="text-slate-500 text-sm print:text-xs">Reporte operativo y financiero generado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+    <aside class="w-72 bg-slate-900 text-white flex-col hidden md:flex rounded-br-3xl shadow-2xl relative z-10 print:hidden">
+        <div class="p-8 border-b border-slate-800">
+            <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <i class="fas fa-shield-halved text-blue-500"></i> Bastion<span class="text-blue-500">Tech</span>
+            </h2>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Centro de Operaciones IT</p>
+            <div class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-medium text-emerald-400">
+                <i class="fas fa-circle text-[8px] mr-2 animate-pulse"></i> @(User.IsInRole("Admin") ? "Rol: Administrador" : "Rol: Soporte Técnico")
+            </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto print:hidden">
-            <form method="get" asp-action="Reportes" class="flex flex-wrap items-end gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex-1 lg:flex-none">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Fecha Desde</label>
-                    <input type="date" name="fechaInicio" value="@Model.FechaInicio.ToString("yyyy-MM-dd")" class="px-3 py-1.5 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700" />
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1">Fecha Hasta</label>
-                    <input type="date" name="fechaFin" value="@Model.FechaFin.ToString("yyyy-MM-dd")" class="px-3 py-1.5 border rounded-lg text-sm bg-slate-50 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700" />
-                </div>
-                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center h-[38px]">
-                    <i class="fas fa-search mr-2"></i> Filtrar
+        <nav class="flex-grow p-4 space-y-1.5 mt-2">
+            <a asp-controller="Admin" asp-action="Dashboard" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                <i class="fas fa-chart-line w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Resumen Operativo
+            </a>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Inventario" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                    <i class="fas fa-server w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Inventario de Hardware
+                </a>
+
+                <a asp-controller="Admin" asp-action="Reportes" class="block w-full text-left px-4 py-3.5 bg-blue-600 rounded-xl text-sm font-bold text-white shadow-lg shadow-blue-900/50 transition-all flex items-center">
+                    <i class="fas fa-file-contract w-6 text-blue-200"></i> Reportes Financieros
+                </a>
+            }
+
+            <a asp-controller="Admin" asp-action="Tickets" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                <i class="fas fa-headset w-6 text-slate-500 group-hover:text-purple-400 transition-colors"></i> Mesa de Ayuda (Tickets)
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-slate-800">
+            <a asp-controller="Tienda" asp-action="Index" class="flex items-center text-xs text-slate-400 hover:text-white transition-colors font-medium">
+                <i class="fas fa-external-link-alt mr-2"></i> Ver Tienda Pública
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto w-full print:p-0">
+
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6 border-b border-slate-200 pb-6 print:border-b-2 print:pb-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight print:text-2xl flex items-center gap-3">
+                    <i class="fas fa-chart-pie text-blue-600 print:hidden"></i> Inteligencia de Negocios
+                </h1>
+                <p class="text-slate-500 text-sm font-medium mt-1 print:text-xs">Reporte operativo y financiero generado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto print:hidden">
+                <form method="get" asp-action="Reportes" class="flex flex-wrap items-end gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex-1 xl:flex-none">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Fecha Desde</label>
+                        <input type="date" name="fechaInicio" value="@Model.FechaInicio.ToString("yyyy-MM-dd")" class="px-4 py-2 border-2 border-slate-100 rounded-xl text-sm bg-slate-50 outline-none focus:bg-white focus:border-blue-600 focus:ring-0 transition-colors font-bold text-slate-700" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Fecha Hasta</label>
+                        <input type="date" name="fechaFin" value="@Model.FechaFin.ToString("yyyy-MM-dd")" class="px-4 py-2 border-2 border-slate-100 rounded-xl text-sm bg-slate-50 outline-none focus:bg-white focus:border-blue-600 focus:ring-0 transition-colors font-bold text-slate-700" />
+                    </div>
+                    <button type="submit" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-bold shadow-md transition-colors flex items-center h-[42px]">
+                        <i class="fas fa-filter mr-2"></i> Filtrar
+                    </button>
+                </form>
+
+                <button onclick="window.print()" class="px-6 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-2xl text-sm font-bold shadow-lg shadow-blue-800/30 transition-all flex items-center h-[42px]">
+                    <i class="fas fa-print mr-2"></i> Exportar a PDF
                 </button>
-            </form>
-
-            <button onclick="window.print()" class="px-4 py-2 bg-blue-800 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center h-[38px] border border-blue-900">
-                <i class="fas fa-file-pdf mr-2"></i> Exportar a PDF
-            </button>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 print:grid-cols-3 print:gap-4">
-
-        <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
-            <p class="text-blue-200 text-sm font-bold uppercase tracking-wider print:text-slate-500">Ingresos del Periodo</p>
-            <h2 class="text-4xl font-black mt-2 print:text-2xl">Bs. @Model.IngresosPeriodo.ToString("N2")</h2>
-
-            <div class="mt-4 pt-3 border-t border-blue-600/50 flex justify-between text-xs items-center print:border-slate-200">
-                <span class="text-blue-200 font-medium print:text-slate-500"><i class="fas fa-globe mr-1"></i> Histórico Total:</span>
-                <span class="font-bold">Bs. @Model.IngresosTotales.ToString("N2")</span>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
-            <p class="text-emerald-200 text-sm font-bold uppercase tracking-wider print:text-slate-500">Ventas del Periodo</p>
-            <h2 class="text-4xl font-black mt-2 print:text-2xl">@Model.VentasPeriodo.Count <span class="text-lg font-medium text-emerald-300 print:text-slate-500">órdenes</span></h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 print:grid-cols-3 print:gap-4">
 
-            <div class="mt-4 pt-3 border-t border-emerald-600/50 flex justify-between text-xs items-center print:border-slate-200">
-                <span class="text-emerald-200 font-medium print:text-slate-500"><i class="fas fa-boxes mr-1"></i> Histórico Total:</span>
-                <span class="font-bold">@Model.TotalOrdenes órdenes</span>
+            <div class="bg-gradient-to-br from-blue-700 to-blue-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none print:rounded-xl print:p-6">
+                <i class="fas fa-coins absolute -right-6 -bottom-6 text-8xl text-white/10 print:hidden"></i>
+                <p class="text-blue-200 text-xs font-bold uppercase tracking-widest print:text-slate-500 relative z-10">Ingresos del Periodo</p>
+                <h2 class="text-4xl font-black mt-2 tracking-tight print:text-2xl relative z-10">Bs. @Model.IngresosPeriodo.ToString("N2")</h2>
+
+                <div class="mt-6 pt-4 border-t border-blue-600/50 flex justify-between text-xs items-center print:border-slate-200 relative z-10">
+                    <span class="text-blue-200 font-medium print:text-slate-500"><i class="fas fa-globe mr-1"></i> Histórico Total:</span>
+                    <span class="font-bold">Bs. @Model.IngresosTotales.ToString("N2")</span>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none print:rounded-xl print:p-6">
+                <i class="fas fa-shopping-bag absolute -right-6 -bottom-6 text-8xl text-white/10 print:hidden"></i>
+                <p class="text-emerald-200 text-xs font-bold uppercase tracking-widest print:text-slate-500 relative z-10">Ventas del Periodo</p>
+                <h2 class="text-4xl font-black mt-2 tracking-tight print:text-2xl relative z-10">@Model.VentasPeriodo.Count <span class="text-xl font-bold text-emerald-300 print:text-slate-500">órdenes</span></h2>
+
+                <div class="mt-6 pt-4 border-t border-emerald-600/50 flex justify-between text-xs items-center print:border-slate-200 relative z-10">
+                    <span class="text-emerald-200 font-medium print:text-slate-500"><i class="fas fa-boxes mr-1"></i> Histórico Total:</span>
+                    <span class="font-bold">@Model.TotalOrdenes órdenes</span>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none print:rounded-xl print:p-6">
+                <i class="fas fa-life-ring absolute -right-6 -bottom-6 text-8xl text-white/10 print:hidden"></i>
+                <p class="text-slate-300 text-xs font-bold uppercase tracking-widest print:text-slate-500 relative z-10">Mesa de Ayuda (Global)</p>
+                <h2 class="text-4xl font-black mt-2 tracking-tight print:text-2xl relative z-10">@Model.TicketPendientes <span class="text-xl font-bold text-rose-400 print:text-red-600">pendientes</span></h2>
+
+                <div class="mt-6 pt-4 border-t border-slate-600/50 flex justify-between text-xs items-center print:border-slate-200 relative z-10">
+                    <span class="text-slate-300 font-medium print:text-slate-500"><i class="fas fa-check-circle text-emerald-500 mr-1"></i> Tickets Resueltos:</span>
+                    <span class="font-bold">@Model.TicketResueltos / @Model.TotalTickets</span>
+                </div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-2xl shadow-lg text-white print:from-white print:to-white print:text-black print:border print:border-slate-300 print:shadow-none">
-            <p class="text-slate-300 text-sm font-bold uppercase tracking-wider print:text-slate-500">Mesa de Ayuda (Global)</p>
-            <h2 class="text-4xl font-black mt-2 print:text-2xl">@Model.TicketPendientes <span class="text-lg font-medium text-rose-400 print:text-red-600">pendientes</span></h2>
-
-            <div class="mt-4 pt-3 border-t border-slate-600/50 flex justify-between text-xs items-center print:border-slate-200">
-                <span class="text-slate-300 font-medium print:text-slate-500"><i class="fas fa-check-circle text-emerald-600 mr-1"></i> Tickets Resueltos:</span>
-                <span class="font-bold">@Model.TicketResueltos / @Model.TotalTickets</span>
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 mb-10 print:border-slate-300 print:rounded-xl print:p-6">
+            <h3 class="text-lg font-black text-slate-800 mb-6 print:text-sm flex items-center gap-2">
+                <i class="fas fa-chart-area text-slate-400 print:hidden"></i> Evolución de Ingresos Diarios
+            </h3>
+            <div class="w-full h-80">
+                <canvas id="graficoIngresos"></canvas>
             </div>
         </div>
-    </div>
 
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 print:border-slate-300">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 print:text-sm">Evolución de Ingresos Diarios</h3>
-        <div class="w-full h-72">
-            <canvas id="graficoIngresos"></canvas>
-        </div>
-    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 print:grid-cols-3 print:gap-6">
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 print:grid-cols-3 print:gap-4">
+            <div class="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col print:border-slate-300 print:col-span-2 print:rounded-xl">
+                <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50 print:p-4 print:bg-white">
+                    <h3 class="text-lg font-black text-slate-800 print:text-sm">Transacciones del Periodo Seleccionado</h3>
+                    <p class="text-sm font-medium text-slate-500 mt-1 print:text-xs">Registros del @Model.FechaInicio.ToString("dd/MM/yyyy") al @Model.FechaFin.ToString("dd/MM/yyyy")</p>
+                </div>
 
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col print:border-slate-300 print:col-span-2">
-            <div class="p-6 border-b border-slate-100 bg-slate-50 print:p-4">
-                <h3 class="text-lg font-bold text-slate-800 print:text-sm">Transacciones del Periodo Seleccionado</h3>
-                <p class="text-xs text-slate-500 mt-1">Registros del @Model.FechaInicio.ToString("dd/MM/yyyy") al @Model.FechaFin.ToString("dd/MM/yyyy")</p>
-            </div>
-
-            <div class="max-h-96 overflow-y-auto print:max-h-full print:overflow-visible">
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 shadow-sm z-10 print:static print:bg-slate-100 print:text-black">
-                        <tr>
-                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Orden</th>
-                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Fecha</th>
-                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Cliente / Correo</th>
-                            <th class="px-6 py-4 font-bold print:px-3 print:py-2">Método</th>
-                            <th class="px-6 py-4 font-bold text-right print:px-3 print:py-2">Monto (Bs)</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 print:divide-slate-200">
-                        @if (Model.VentasPeriodo.Any())
-                        {
-                            foreach (var venta in Model.VentasPeriodo)
+                <div class="max-h-[400px] overflow-y-auto print:max-h-full print:overflow-visible">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-[11px] font-black text-slate-400 uppercase tracking-wider bg-white sticky top-0 shadow-sm z-10 print:static print:bg-slate-50 print:text-slate-600 print:shadow-none border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4 print:px-3 print:py-2">Orden</th>
+                                <th class="px-6 py-4 print:px-3 print:py-2">Fecha</th>
+                                <th class="px-6 py-4 print:px-3 print:py-2">Cliente / Correo</th>
+                                <th class="px-6 py-4 print:px-3 print:py-2 text-center">Método</th>
+                                <th class="px-6 py-4 text-right print:px-3 print:py-2">Monto (Bs)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 print:divide-slate-200">
+                            @if (Model.VentasPeriodo.Any())
                             {
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-6 py-4 font-bold text-blue-800 print:px-3 print:py-2">#@venta.Id</td>
-                                    <td class="px-6 py-4 text-slate-600 print:px-3 print:py-2">@venta.FechaTransaccion.ToString("dd/MM HH:mm")</td>
-                                    <td class="px-6 py-4 text-slate-800 font-medium print:px-3 print:py-2">@(string.IsNullOrEmpty(venta.Correo) ? "Anónimo" : venta.Correo)</td>
-                                    <td class="px-6 py-4 print:px-3 print:py-2">
-                                        <span class="px-2 py-1 text-xs font-bold rounded-md bg-slate-100 text-slate-600 border border-slate-200 print:border-none print:p-0">
-                                            @(string.IsNullOrEmpty(venta.MetodoPago) ? "N/A" : venta.MetodoPago)
-                                        </span>
+                                foreach (var venta in Model.VentasPeriodo)
+                                {
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 font-black text-blue-800 print:px-3 print:py-2">#@venta.Id</td>
+                                        <td class="px-6 py-4 text-slate-600 font-medium print:px-3 print:py-2">@venta.FechaTransaccion.ToString("dd/MM HH:mm")</td>
+                                        <td class="px-6 py-4 text-slate-800 font-bold print:px-3 print:py-2">@(string.IsNullOrEmpty(venta.Correo) ? "Anónimo" : venta.Correo)</td>
+                                        <td class="px-6 py-4 text-center print:px-3 print:py-2">
+                                            <span class="inline-flex items-center px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg bg-slate-100 text-slate-600 border border-slate-200 print:border-none print:p-0">
+                                                @(string.IsNullOrEmpty(venta.MetodoPago) ? "N/A" : venta.MetodoPago)
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 font-black text-slate-800 text-right print:px-3 print:py-2 text-base">@venta.Total.ToString("N2")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="px-6 py-16 text-center text-slate-400 font-medium">
+                                        <i class="fas fa-folder-open text-4xl mb-3 text-slate-200 block"></i>
+                                        No hay transacciones registradas en este periodo.
                                     </td>
-                                    <td class="px-6 py-4 font-black text-slate-800 text-right print:px-3 print:py-2">@venta.Total.ToString("N2")</td>
                                 </tr>
                             }
-                        }
-                        else
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 print:border-slate-300 print:p-4 print:col-span-1 print:rounded-xl">
+                <h3 class="text-lg font-black text-slate-800 mb-6 print:text-sm flex items-center gap-2 border-b border-slate-100 pb-4 print:border-none">
+                    <i class="fas fa-trophy text-amber-500 print:hidden"></i> Top 5 del Periodo
+                </h3>
+
+                @if (Model.ProductosMasVendidos.Any())
+                {
+                    <div class="space-y-6 print:mt-3 print:space-y-4">
+                        @foreach (var prod in Model.ProductosMasVendidos)
                         {
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-slate-500 font-medium">
-                                    No hay transacciones registradas en este periodo.
-                                </td>
-                            </tr>
+                            var maxVentas = Model.ProductosMasVendidos.Max(p => p.CantidadVendida);
+                            var porcentaje = maxVentas > 0 ? (prod.CantidadVendida * 100 / maxVentas) : 0;
+
+                            <div>
+                                <div class="flex justify-between items-end text-sm mb-2">
+                                    <span class="font-bold text-slate-800 truncate max-w-[140px] print:text-xs">@prod.NombreProducto</span>
+                                    <span class="font-black text-blue-800 text-sm tracking-tight">Bs. @prod.TotalRecaudado.ToString("N0")</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1 bg-slate-100 rounded-full h-2.5 print:border print:border-slate-200">
+                                        <div class="bg-gradient-to-r from-blue-500 to-blue-700 h-2.5 rounded-full print:bg-blue-600" style="width: @porcentaje%"></div>
+                                    </div>
+                                    <span class="text-xs font-black text-slate-500 whitespace-nowrap print:text-[10px] w-12 text-right">@prod.CantidadVendida ud.</span>
+                                </div>
+                            </div>
                         }
-                    </tbody>
-                </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="py-12 text-center text-slate-400 text-sm font-medium">
+                        <i class="fas fa-box-open text-3xl mb-3 text-slate-200 block"></i>
+                        Aún no hay productos en rotación.
+                    </div>
+                }
             </div>
         </div>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 print:border-slate-300 print:p-4 print:col-span-1">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 print:text-sm">Top 5 del Periodo</h3>
-
-            @if (Model.ProductosMasVendidos.Any())
-            {
-                <div class="space-y-4 mt-6 print:mt-3 print:space-y-3">
-                    @foreach (var prod in Model.ProductosMasVendidos)
-                    {
-                        var maxVentas = Model.ProductosMasVendidos.Max(p => p.CantidadVendida);
-                        var porcentaje = maxVentas > 0 ? (prod.CantidadVendida * 100 / maxVentas) : 0;
-
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="font-bold text-slate-700 truncate max-w-[140px] print:text-xs">@prod.NombreProducto</span>
-                                <span class="font-black text-blue-800 text-xs">Bs. @prod.TotalRecaudado.ToString("N0")</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-full bg-slate-100 rounded-full h-2 print:border print:border-slate-200">
-                                    <div class="bg-blue-500 h-2 rounded-full print:bg-blue-600" style="width: @porcentaje%"></div>
-                                </div>
-                                <span class="text-xs font-bold text-slate-500 whitespace-nowrap print:text-[10px]">@prod.CantidadVendida und.</span>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <div class="p-8 text-center text-slate-400 text-sm">
-                    Aún no hay productos en rotación.
-                </div>
-            }
-        </div>
-    </div>
+    </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -186,11 +239,11 @@
     document.addEventListener('DOMContentLoaded', function () {
 
     const datosBrutos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.VentasPeriodo
-                    .GroupBy(v => v.FechaTransaccion.ToString("dd/MM/yyyy"))
-                    .Select(g => new { Fecha = g.Key, Monto = g.Sum(x => x.Total) })
-                    .Reverse()
-            ));
+                        Model.VentasPeriodo
+                            .GroupBy(v => v.FechaTransaccion.ToString("dd/MM/yyyy"))
+                            .Select(g => new { Fecha = g.Key, Monto = g.Sum(x => x.Total) })
+                            .Reverse()
+                    ));
 
     const etiquetas = datosBrutos.map(d => d.Fecha);
     const valores = datosBrutos.map(d => d.Monto);
@@ -208,15 +261,16 @@
     datasets: [{
     label: 'Ingresos Diarios (Bs.)',
     data: valores,
-    borderColor: '#1e40af',
-    backgroundColor: 'rgba(30, 64, 175, 0.1)',
+    borderColor: '#1d4ed8', // blue-700
+    backgroundColor: 'rgba(29, 78, 216, 0.1)',
     borderWidth: 3,
-    pointBackgroundColor: '#10b981',
+    pointBackgroundColor: '#10b981', // emerald-500
     pointBorderColor: '#ffffff',
     pointBorderWidth: 2,
-    pointRadius: 4,
+    pointRadius: 5,
+    pointHoverRadius: 7,
     fill: true,
-    tension: 0.3
+    tension: 0.4 // Curvas más suaves
     }]
     },
     options: {
@@ -224,17 +278,37 @@
     maintainAspectRatio: false,
     animation: false, // Desactivar animaciones para que al imprimir capture la línea fija de inmediato
     plugins: {
-    legend: { display: false }
+    legend: { display: false },
+    tooltip: {
+    backgroundColor: '#1e293b',
+    padding: 12,
+    titleFont: { size: 13, family: "'Inter', sans-serif" },
+    bodyFont: { size: 14, weight: 'bold', family: "'Inter', sans-serif" },
+    displayColors: false,
+    callbacks: {
+    label: function(context) { return 'Bs. ' + context.parsed.y.toLocaleString(); }
+    }
+    }
     },
     scales: {
     y: {
     beginAtZero: true,
-    grid: { borderDash: [4, 4] },
+    grid: { borderDash: [4, 4], color: '#f1f5f9' },
     ticks: {
+    font: { family: "'Inter', sans-serif", weight: '500' },
+    color: '#64748b',
     callback: function(value) { return 'Bs. ' + value; }
-    }
     },
-    x: { grid: { display: false } }
+    border: { display: false }
+    },
+    x: {
+    grid: { display: false },
+    ticks: {
+    font: { family: "'Inter', sans-serif", weight: '500' },
+    color: '#64748b'
+    },
+    border: { display: false }
+    }
     }
     }
     });

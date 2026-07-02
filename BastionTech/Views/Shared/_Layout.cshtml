@@ -9,53 +9,95 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-900 flex flex-col min-h-screen">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0 flex items-center">
-                    <a asp-controller="Tienda" asp-action="Index" class="text-2xl font-black text-blue-800 tracking-tight">
-                        Bastion<span class="text-slate-800">Tech</span>
-                    </a>
+    <header class="sticky top-0 z-50">
+
+        <div class="bg-blue-900 text-blue-100 text-xs py-1.5 hidden md:block">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center font-medium">
+                <span><i class="fas fa-truck mr-1"></i> Envíos rápidos en Cochabamba y a nivel nacional</span>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-white transition-colors">Venta Corporativa</a>
+                    <a asp-controller="Tienda" asp-action="AbrirTicket" class="hover:text-white transition-colors">Centro de Ayuda SOC</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-800 text-white py-4 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 sm:gap-8">
+
+                <a asp-controller="Tienda" asp-action="Index" class="text-2xl sm:text-3xl font-black tracking-tight flex-shrink-0">
+                    Bastion<span class="text-blue-300">Tech</span>
+                </a>
+
+                <div class="hidden md:flex flex-1 max-w-2xl relative">
+                    <input type="text" placeholder="Buscar hardware, licencias o servicios IT..." class="w-full py-2.5 pl-4 pr-12 rounded-lg text-slate-800 text-sm focus:outline-none shadow-inner">
+                    <button class="absolute right-0 top-0 h-full px-4 text-slate-400 hover:text-blue-800 transition-colors bg-white rounded-r-lg border-l border-slate-100">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
 
-                <div class="flex items-center space-x-6">
-                    @if (User.Identity == null || !User.Identity.IsAuthenticated || (!User.IsInRole("Admin") && !User.IsInRole("Tecnico")))
-                    {
-                        <a asp-controller="Tienda" asp-action="Carrito" class="relative p-2 text-slate-600 hover:text-blue-800 transition-colors">
-                            <i class="fas fa-shopping-cart text-xl"></i>
-                            <span id="contador-carrito" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-rose-500 rounded-full">0</span>
-                        </a>
-
-                        <a asp-controller="Tienda" asp-action="AbrirTicket" class="text-sm font-bold text-slate-600 hover:text-blue-800 transition-colors">
-                            <i class="fas fa-headset mr-1"></i> Soporte
-                        </a>
-                        <a asp-controller="Tienda" asp-action="MisCompras" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-700 transition-colors font-medium">
-                            <i class="fas fa-file-invoice-dollar mr-2 w-4 text-center text-slate-400"></i> Mis Compras
-                        </a>
-                    }
+                <div class="flex items-center space-x-6 flex-shrink-0">
 
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        @if (User.IsInRole("Admin") || User.IsInRole("Tecnico"))
-                        {
-                            <a asp-controller="Admin" asp-action="Dashboard" class="text-sm font-bold text-emerald-600 hover:text-emerald-700">
-                                <i class="fas fa-shield-alt mr-1"></i> Dashboard
+                        <div class="flex items-center gap-3">
+                            <div class="hidden sm:block text-right">
+                                <p class="text-xs text-blue-200">Bienvenido,</p>
+                                <p class="text-sm font-bold truncate max-w-[120px]">@User.Identity.Name</p>
+                            </div>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Tecnico"))
+                            {
+                                <a asp-controller="Admin" asp-action="Dashboard" class="text-white hover:text-emerald-300 transition-colors" title="Panel de Control">
+                                    <i class="fas fa-shield-alt text-xl"></i>
+                                </a>
+                            }
+
+                            <a asp-controller="Account" asp-action="Logout" onclick="cerrarSesionSupabase()" class="text-blue-200 hover:text-white transition-colors ml-2" title="Cerrar Sesión">
+                                <i class="fas fa-sign-out-alt text-xl"></i>
                             </a>
-                        }
-
-                        <span class="text-sm font-medium text-slate-600 hidden md:inline-block">Hola, @User.Identity.Name</span>
-
-                        <a asp-controller="Account" asp-action="Logout" class="hidden sm:inline-flex items-center justify-center px-4 py-2 border border-slate-200 text-sm font-medium rounded-md text-slate-600 bg-white hover:bg-slate-50 shadow-sm transition-colors" onclick="cerrarSesionSupabase()">
-                            Salir
-                        </a>
+                        </div>
                     }
                     else
                     {
-                        <a asp-controller="Account" asp-action="Login" class="hidden sm:inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-800 hover:bg-blue-700 shadow-sm transition-colors">
-                            Iniciar Sesión
+                        <a asp-controller="Account" asp-action="Login" class="flex items-center gap-2 hover:text-blue-200 transition-colors">
+                            <i class="far fa-user text-xl"></i>
+                            <span class="text-sm font-bold hidden sm:block">Mi Cuenta</span>
+                        </a>
+                    }
+
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated || (!User.IsInRole("Admin") && !User.IsInRole("Tecnico")))
+                    {
+                        <a asp-controller="Tienda" asp-action="Carrito" class="relative flex items-center gap-2 hover:text-blue-200 transition-colors">
+                            <div class="relative">
+                                <i class="fas fa-shopping-cart text-xl"></i>
+                                <span id="contador-carrito" class="absolute -top-2 -right-2 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-rose-500 border border-blue-800 rounded-full">0</span>
+                            </div>
+                            <span class="text-sm font-bold hidden sm:block">Mi Carrito</span>
                         </a>
                     }
                 </div>
+            </div>
+        </div>
+
+        <div class="bg-white border-b border-slate-200 shadow-sm hidden sm:block">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-8 h-12 text-sm font-bold text-slate-600 overflow-x-auto">
+
+                <a href="/Tienda/Index" class="hover:text-blue-800 transition-colors border-b-2 border-transparent hover:border-blue-800 py-3">Todos los Productos</a>
+
+                <a href="/Tienda/Index?categoria=Componentes PC" class="hover:text-blue-800 transition-colors border-b-2 border-transparent hover:border-blue-800 py-3 whitespace-nowrap">Componentes PC</a>
+                <a href="/Tienda/Index?categoria=Equipos y Portátiles" class="hover:text-blue-800 transition-colors border-b-2 border-transparent hover:border-blue-800 py-3 whitespace-nowrap">Equipos y Portátiles</a>
+
+                <a href="/Tienda/Index?categoria=Servicios Cloud" class="hover:text-blue-800 transition-colors border-b-2 border-transparent hover:border-blue-800 py-3 whitespace-nowrap">Ecosistema Microsoft Cloud</a>
+                <a href="/Tienda/Index?categoria=Ciberseguridad (SOC)" class="hover:text-emerald-600 transition-colors border-b-2 border-transparent hover:border-emerald-600 py-3 text-emerald-600 whitespace-nowrap">Servicios SOC y Blue Team</a>
+
+                <div class="flex-1"></div>
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated && (!User.IsInRole("Admin") && !User.IsInRole("Tecnico")))
+                {
+                    <a asp-controller="Tienda" asp-action="MisCompras" class="hover:text-blue-800 transition-colors flex items-center gap-2 border-l border-slate-200 pl-6 py-1 whitespace-nowrap">
+                        <i class="fas fa-file-invoice-dollar"></i> Mis Compras
+                    </a>
+                }
             </div>
         </div>
     </header>
@@ -65,8 +107,44 @@
     </main>
 
     <footer class="bg-white border-t border-slate-200 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-slate-500 text-sm">
-            &copy; @DateTime.Now.Year - BastionTech | Protegiendo y equipando tu infraestructura.
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-blue-800 text-lg font-black tracking-tight mb-4">Bastion<span class="text-slate-800">Tech</span></h3>
+                    <p class="text-sm text-slate-500 mb-4">Proveedores líderes en soluciones de infraestructura de hardware y servicios de ciberseguridad corporativa.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-4 uppercase text-xs tracking-wider">Productos y Servicios</h4>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li><a href="#" class="hover:text-blue-800">Hardware y Componentes</a></li>
+                        <li><a href="#" class="hover:text-blue-800">Licenciamiento Microsoft</a></li>
+                        <li><a href="#" class="hover:text-blue-800">Auditoría y Soporte SOC</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-4 uppercase text-xs tracking-wider">Atención al Cliente</h4>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li><a asp-controller="Tienda" asp-action="AbrirTicket" class="hover:text-blue-800">Mesa de Ayuda</a></li>
+                        <li><a href="#" class="hover:text-blue-800">Seguimiento de Logística</a></li>
+                        <li><a href="#" class="hover:text-blue-800">Términos y Condiciones</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-4 uppercase text-xs tracking-wider">Contacto</h4>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li><i class="fas fa-map-marker-alt w-5 text-slate-400"></i> Almacén Central, Cochabamba</li>
+                        <li><i class="fas fa-envelope w-5 text-slate-400"></i> logistica@bastiontech.com</li>
+                        <li class="mt-4 flex space-x-4">
+                            <a href="#" class="text-slate-400 hover:text-blue-800 text-xl"><i class="fab fa-linkedin"></i></a>
+                            <a href="#" class="text-slate-400 hover:text-blue-800 text-xl"><i class="fab fa-github"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-100 pt-6 text-center text-slate-400 text-xs font-medium">
+                &copy; @DateTime.Now.Year - BastionTech. Todos los derechos reservados.
+            </div>
         </div>
     </footer>
 

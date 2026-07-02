@@ -3,62 +3,139 @@
     ViewData["Title"] = "Gestión de Tickets";
 }
 
-<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800">Centro de Soporte Técnico</h1>
-            <p class="text-sm text-slate-500 mt-1">Bandeja de servicios IT pendientes y en proceso</p>
-        </div>
-    </div>
+<div class="min-h-screen bg-slate-50 flex -mt-8 -mx-4 sm:-mx-6 lg:-mx-8">
 
-    @if (TempData["MensajeExito"] != null)
-    {
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-r-lg shadow-sm flex items-center">
-            <i class="fas fa-check-circle text-xl mr-3"></i>
-            <p class="font-medium">@TempData["MensajeExito"]</p>
+    <aside class="w-72 bg-slate-900 text-white flex-col hidden md:flex rounded-br-3xl shadow-2xl relative z-10">
+        <div class="p-8 border-b border-slate-800">
+            <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <i class="fas fa-shield-halved text-blue-500"></i> Bastion<span class="text-blue-500">Tech</span>
+            </h2>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">Centro de Operaciones IT</p>
+            <div class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-medium text-emerald-400">
+                <i class="fas fa-circle text-[8px] mr-2 animate-pulse"></i> @(User.IsInRole("Admin") ? "Administrador" : "Soporte Técnico")
+            </div>
         </div>
-    }
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-xs uppercase tracking-wider">
-                        <th class="p-4 font-bold">Nº Ticket</th>
-                        <th class="p-4 font-bold">Fecha de Creación</th>
-                        <th class="p-4 font-bold text-center">Estado</th>
-                        <th class="p-4 font-bold text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
-                    @foreach (var ticket in Model)
-                    {
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 font-bold text-slate-800">#@ticket.Id</td>
-                            <td class="p-4 text-slate-600">@ticket.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td class="p-4 text-center">
-                                @if (ticket.EstadoTicket == "Resuelto")
-                                {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Resuelto</span>
-                                }
-                                else if (ticket.EstadoTicket == "En Proceso")
-                                {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">En Proceso</span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">Pendiente</span>
-                                }
-                            </td>
-                            <td class="p-4 text-center">
-                                <a asp-action="GestionarTicket" asp-route-id="@ticket.Id" class="text-blue-600 hover:text-blue-800 font-bold px-4 py-2 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <i class="fas fa-wrench mr-2"></i> Diagnóstico
-                                </a>
-                            </td>
+        <nav class="flex-grow p-4 space-y-1.5 mt-2">
+            <a asp-controller="Admin" asp-action="Dashboard" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                <i class="fas fa-chart-line w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Resumen Operativo
+            </a>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Inventario" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                    <i class="fas fa-server w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Inventario de Hardware
+                </a>
+                <a asp-controller="Admin" asp-action="Reportes" class="block w-full text-left px-4 py-3.5 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center group">
+                    <i class="fas fa-file-contract w-6 text-slate-500 group-hover:text-blue-400 transition-colors"></i> Reportes Financieros
+                </a>
+            }
+
+            <a asp-controller="Admin" asp-action="Tickets" class="block w-full text-left px-4 py-3.5 bg-blue-600 rounded-xl text-sm font-bold text-white shadow-lg shadow-blue-900/50 transition-all flex items-center">
+                <i class="fas fa-headset w-6 text-blue-200"></i> Mesa de Ayuda (Tickets)
+            </a>
+        </nav>
+
+        <div class="p-6 border-t border-slate-800">
+            <a asp-controller="Tienda" asp-action="Index" class="flex items-center text-xs text-slate-400 hover:text-white transition-colors font-medium">
+                <i class="fas fa-external-link-alt mr-2"></i> Ver Tienda Pública
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 lg:p-12 overflow-y-auto w-full">
+
+        <div class="mb-10 border-b border-slate-200 pb-6 flex items-center gap-4">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-100 text-blue-800 flex-shrink-0 shadow-sm border border-blue-200">
+                <i class="fas fa-headset text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Centro de Soporte Técnico</h1>
+                <p class="text-sm md:text-base text-slate-500 mt-1 font-medium">Bandeja de atención de incidentes y servicios IT pendientes o en proceso.</p>
+            </div>
+        </div>
+
+        @if (TempData["MensajeExito"] != null)
+        {
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-8 rounded-r-xl shadow-sm flex items-center font-bold">
+                <i class="fas fa-check-circle text-xl mr-3"></i> @TempData["MensajeExito"]
+            </div>
+        }
+
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-400 text-[11px] uppercase tracking-wider font-black">
+                            <th class="p-5">Nº Ticket</th>
+                            <th class="p-5">Fecha de Apertura</th>
+                            <th class="p-5 text-center">Estado del Caso</th>
+                            <th class="p-5 text-center">Acciones</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var ticket in Model)
+                            {
+                                <tr class="hover:bg-blue-50/50 transition-colors group">
+                                    <td class="p-5">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 text-slate-700 border border-slate-200 group-hover:bg-white group-hover:border-slate-300 transition-colors">
+                                            #@ticket.Id
+                                        </span>
+                                    </td>
+
+                                    <td class="p-5 text-slate-600 font-medium">
+                                        @ticket.FechaCreacion.ToString("dd/MM/yyyy — HH:mm") hrs
+                                    </td>
+
+                                    <td class="p-5 text-center">
+                                        @if (ticket.EstadoTicket == "Resuelto")
+                                        {
+                                            <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                <i class="fas fa-check-circle mr-1.5"></i> Resuelto
+                                            </span>
+                                        }
+                                        else if (ticket.EstadoTicket == "En Proceso")
+                                        {
+                                            <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200">
+                                                <i class="fas fa-spinner fa-spin mr-1.5"></i> En Proceso
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200">
+                                                <i class="fas fa-exclamation-triangle mr-1.5"></i> Pendiente
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="p-5 text-center">
+                                        <a asp-action="GestionarTicket" asp-route-id="@ticket.Id" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 shadow-sm transition-all">
+                                            <i class="fas fa-wrench mr-2 text-slate-400 group-hover:text-blue-600"></i> Diagnóstico
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="px-6 py-16 text-center text-slate-400 font-medium">
+                                    <i class="fas fa-clipboard-check text-4xl mb-3 text-slate-200 block"></i>
+                                    No se registran tickets abiertos en la mesa de ayuda.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-slate-50 border-t border-slate-200 p-4 text-right">
+                <span class="text-xs font-black text-slate-400 uppercase tracking-wider">
+                    Total Incidentes en Cola: @(Model?.Count() ?? 0)
+                </span>
+            </div>
         </div>
-    </div>
+    </main>
 </div>

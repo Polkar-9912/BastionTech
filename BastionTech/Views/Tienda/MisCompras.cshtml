@@ -3,71 +3,92 @@
     ViewData["Title"] = "Mis Compras";
 }
 
-<div class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <div class="mb-8 border-b border-slate-200 pb-5">
-        <h1 class="text-3xl font-black text-slate-800 tracking-tight">
-            <i class="fas fa-file-invoice-dollar text-blue-800 mr-2"></i>Historial Financiero
-        </h1>
-        <p class="text-slate-500 mt-2 text-sm font-medium">Gestiona y audita todos tus comprobantes de pago y adquisiciones en BastionTech.</p>
+    <!-- Migas de pan (Breadcrumbs) -->
+    <nav class="flex text-sm text-slate-500 mb-6 font-medium" aria-label="Breadcrumb">
+        <a asp-controller="Tienda" asp-action="Index" class="hover:text-blue-800 transition-colors flex items-center">
+            <i class="fas fa-home mr-2"></i> Inicio
+        </a>
+        <span class="mx-3 text-slate-300">/</span>
+        <span class="text-slate-800 font-bold">Mis Compras</span>
+    </nav>
+
+    <!-- Cabecera de la Sección -->
+    <div class="mb-10 border-b border-slate-200 pb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-100 text-blue-800 flex-shrink-0 shadow-sm border border-blue-200">
+            <i class="fas fa-file-invoice-dollar text-2xl"></i>
+        </div>
+        <div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Historial Financiero</h1>
+            <p class="text-sm md:text-base text-slate-500 mt-1 font-medium">Gestiona y audita todos tus comprobantes de pago y adquisiciones en BastionTech.</p>
+        </div>
     </div>
 
     @if (Model.Compras == null || !Model.Compras.Any())
     {
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
-            <div class="w-24 h-24 mx-auto bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 mb-6">
-                <i class="fas fa-box-open text-4xl text-slate-300"></i>
+        <!-- Estado Vacío (Empty State Refinado) -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-lg flex flex-col items-center justify-center min-h-[400px]">
+            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center shadow-inner border border-slate-100 mb-6">
+                <i class="fas fa-box-open text-5xl text-slate-300"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Aún no tienes compras registradas</h3>
-            <p class="text-slate-500 mb-8 max-w-md mx-auto">Tu historial está en blanco. Explora nuestro catálogo para encontrar el hardware o servicio IT que necesitas.</p>
+            <h3 class="text-2xl font-black text-slate-800 mb-3 tracking-tight">Aún no tienes compras registradas</h3>
+            <p class="text-slate-500 mb-8 max-w-md text-base font-medium leading-relaxed">
+                Tu historial está en blanco. Explora nuestro catálogo corporativo para encontrar el hardware o servicio IT que tu infraestructura necesita.
+            </p>
 
-            <a asp-controller="Tienda" asp-action="Index" class="inline-flex items-center px-6 py-3 bg-blue-800 hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm transition-all">
-                <i class="fas fa-store mr-2"></i> Ir a la Tienda
+            <a asp-controller="Tienda" asp-action="Index" class="inline-flex items-center px-8 py-3.5 bg-blue-800 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg hover:shadow-blue-800/30 transition-all group">
+                <i class="fas fa-store mr-2 group-hover:scale-110 transition-transform"></i> Explorar Catálogo
             </a>
         </div>
     }
     else
     {
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Tabla de Resultados Corporativa -->
+        <div class="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden mb-8">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                    <thead class="text-[11px] text-slate-500 uppercase tracking-wider bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th scope="col" class="px-6 py-4 font-bold"># Orden</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Fecha de Compra</th>
-                            <th scope="col" class="px-6 py-4 font-bold">Método de Pago</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-right">Monto Total</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-center">Auditoría</th>
+                            <th scope="col" class="px-6 py-5 font-black">Nº de Orden</th>
+                            <th scope="col" class="px-6 py-5 font-black">Fecha y Hora</th>
+                            <th scope="col" class="px-6 py-5 font-black text-center">Método de Pago</th>
+                            <th scope="col" class="px-6 py-5 font-black text-right">Monto Total</th>
+                            <th scope="col" class="px-6 py-5 font-black text-center">Auditoría</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @foreach (var compra in Model.Compras)
                         {
-                            <tr class="hover:bg-slate-50/50 transition-colors">
-                                <td class="px-6 py-4 font-black text-blue-800">
-                                    #@compra.Id
+                            <tr class="hover:bg-blue-50/50 transition-colors group">
+                                <td class="px-6 py-5">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black bg-slate-100 text-slate-700 border border-slate-200 group-hover:bg-white group-hover:border-slate-300 transition-colors">
+                                        #@compra.Id
+                                    </span>
                                 </td>
 
-                                <td class="px-6 py-4 text-slate-600 font-medium">
-                                    @compra.FechaTransaccion.ToString("dd/MM/yyyy")
-                                    <span class="text-xs text-slate-400 block">@compra.FechaTransaccion.ToString("HH:mm")</span>
+                                <td class="px-6 py-5 text-slate-600 font-medium">
+                                    <div class="flex flex-col">
+                                        <span class="text-slate-800 font-bold">@compra.FechaTransaccion.ToString("dd/MM/yyyy")</span>
+                                        <span class="text-xs text-slate-400">@compra.FechaTransaccion.ToString("HH:mm") hrs</span>
+                                    </div>
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                        <i class="fas fa-wallet mr-1.5 text-slate-400"></i>
+                                <td class="px-6 py-5 text-center">
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shadow-sm">
+                                        <i class="fas fa-wallet mr-2 text-blue-600"></i>
                                         @(string.IsNullOrEmpty(compra.MetodoPago) ? "No especificado" : compra.MetodoPago)
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-4 font-black text-slate-800 text-right text-base">
+                                <td class="px-6 py-5 font-black text-blue-800 text-right text-lg tracking-tight">
                                     Bs. @compra.Total.ToString("N2")
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-6 py-5 text-center">
                                     <a asp-controller="Tienda" asp-action="Recibo" asp-route-id="@compra.Id"
-                                       class="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-600 font-bold hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all text-xs shadow-sm">
-                                        <i class="fas fa-file-pdf mr-1.5"></i> Ver Recibo
+                                       class="inline-flex items-center justify-center px-4 py-2 bg-white border-2 border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-blue-800 hover:text-white hover:border-blue-800 transition-all text-xs shadow-sm w-full max-w-[140px]">
+                                        <i class="fas fa-file-pdf mr-2"></i> Ver Recibo
                                     </a>
                                 </td>
                             </tr>
@@ -76,26 +97,32 @@
                 </table>
             </div>
 
-            <div class="bg-slate-50 border-t border-slate-200 p-4 text-right">
-                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Total de registros históricos: @Model.Compras.Count
+            <!-- Footer de la Tabla -->
+            <div class="bg-slate-50 border-t border-slate-200 p-5 text-right flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-400 flex items-center gap-2">
+                    <i class="fas fa-shield-alt"></i> Transacciones encriptadas
+                </span>
+                <span class="text-xs font-black text-slate-500 uppercase tracking-wider bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                    Total de registros: @Model.Compras.Count
                 </span>
             </div>
         </div>
-        <div class="mt-8 bg-blue-50 border border-blue-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-100">
-                    <i class="fas fa-truck text-blue-600 text-xl"></i>
+
+        <!-- Banner de Soporte Logístico -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-slate-800">
+            <div class="flex items-center gap-5">
+                <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/20">
+                    <i class="fas fa-truck-fast text-blue-400 text-2xl"></i>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-slate-800">¿Dudas sobre la entrega o despacho de tu hardware?</h3>
-                    <p class="text-sm text-slate-600 mt-0.5">Póngase en contacto directo con nuestra área de Logística y Almacén para el seguimiento.</p>
+                    <h3 class="text-lg font-black text-white">¿Dudas sobre el despacho de tu hardware?</h3>
+                    <p class="text-sm text-slate-300 mt-1 font-medium max-w-xl">Ponte en contacto directo con nuestra área de Logística y Almacén para solicitar el código de seguimiento de tu orden.</p>
                 </div>
             </div>
 
             <a href="mailto:logistica@bastiontech.com?subject=Consulta%20sobre%20seguimiento%20de%20Orden"
-               class="whitespace-nowrap px-5 py-2.5 bg-white border border-slate-300 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 text-slate-700 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center">
-                <i class="fas fa-headset mr-2"></i> Contactar a Logística
+               class="whitespace-nowrap px-6 py-3.5 bg-blue-600 hover:bg-blue-500 border border-blue-500 text-white rounded-xl text-sm font-bold shadow-lg transition-all flex items-center group">
+                <i class="fas fa-headset mr-2 group-hover:scale-110 transition-transform"></i> Contactar a Logística
             </a>
         </div>
     }
